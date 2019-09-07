@@ -1,0 +1,227 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".ChooseCourse.ChooseCoursesActivity">
+
+    <LinearLayout
+        android:background="@color/secondaryLightColor"
+        android:id="@+id/layoutChooseCourse"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:id="@+id/layoutDegreeLevel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="16dp"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/undergraduate"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:background="@drawable/border_selector"
+                android:gravity="bottom|start|center"
+                android:padding="16dp"
+                android:text="Preddiplomski"
+                android:textAlignment="center"
+                android:textColor="@color/secondaryTextColor"
+                android:textSize="8sp" />
+
+            <Button
+                android:id="@+id/graduate"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:layout_marginEnd="16dp"
+                android:layout_weight="1"
+                android:background="@drawable/border_selector"
+                android:gravity="bottom|center_horizontal|center_vertical"
+                android:maxWidth="88dip"
+                android:minWidth="88dip"
+                android:padding="16dp"
+                android:text="Diplomski"
+                android:textColor="@color/secondaryTextColor"
+                android:textSize="8sp" />
+
+            <Button
+                android:id="@+id/professional"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:background="@drawable/border_selector"
+                android:gravity="bottom|center_horizontal|center_vertical"
+                android:padding="16dp"
+                android:text="Stručni"
+                android:textColor="@color/secondaryTextColor"
+                android:textSize="8sp" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/layoutElectiveModules"
+            android:orientation="horizontal"
+            android:layout_margin="16dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:visibility="gone">
+
+            <Button
+                android:id="@+id/electivePowerEngineering"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="8dp"
+                android:layout_weight="1"
+                android:background="@drawable/border_selector"
+                android:gravity="bottom|center_horizontal"
+                android:padding="16dp"
+                android:text="E"
+                android:textColor="@color/secondaryTextColor" />
+
+            <Button
+                android:id="@+id/electiveCommunicationsAndInformatics"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:layout_marginEnd="8dp"
+                android:layout_weight="1"
+                android:background="@drawable/border_selector"
+                android:gravity="bottom|center_horizontal"
+                android:padding="16dp"
+                android:text="K"
+                android:visibility="gone"
+                android:textColor="@color/secondaryTextColor" />
+
+            <Button
+                android:id="@+id/electiveComputerEngineering"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:layout_marginEnd="8dp"
+                android:layout_weight="1"
+                android:background="@drawable/border_selector"
+                android:gravity="bottom|center_horizontal"
+                android:padding="16dp"
+                android:text="R"
+                android:textColor="@color/secondaryTextColor" />
+
+            <Button
+                android:id="@+id/electiveAutomotive"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:layout_marginEnd="8dp"
+                android:layout_weight="1"
+                android:background="@drawable/border_selector"
+                android:gravity="bottom|center_horizontal"
+                android:padding="16dp"
+                android:text="A"
+                android:visibility="gone"
+                android:textColor="@color/secondaryTextColor" />
+
+            <Button
+                android:id="@+id/electiveInformatics"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:layout_weight="1"
+                android:background="@drawable/border_selector"
+                android:gravity="bottom|center_horizontal"
+                android:padding="16dp"
+                android:text="I"
+                android:visibility="gone"
+                android:textColor="@color/secondaryTextColor" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/layoutGraduateElectiveModules"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="16dp"
+            android:orientation="horizontal"
+            android:visibility="gone">
+
+            <Button
+                android:id="@+id/btnA"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="8dp"
+                android:layout_weight="1"
+                android:background="@drawable/border_ring_selector"
+                android:gravity="bottom|center_horizontal"
+                android:padding="16dp"
+                android:text="a"
+                android:textColor="@color/secondaryTextColor" />
+
+            <Button
+                android:id="@+id/btnB"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:layout_marginEnd="8dp"
+                android:layout_weight="1"
+                android:background="@drawable/border_ring_selector"
+                android:gravity="bottom|center_horizontal"
+                android:maxWidth="48dip"
+                android:padding="16dp"
+                android:text="b"
+                android:textColor="@color/secondaryTextColor" />
+
+            <Button
+                android:id="@+id/btnC"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:layout_marginEnd="8dp"
+                android:layout_weight="1"
+                android:background="@drawable/border_ring_selector"
+                android:gravity="bottom|center_horizontal"
+                android:maxWidth="48dip"
+                android:padding="16dp"
+                android:text="c"
+                android:textColor="@color/secondaryTextColor" />
+
+            <Button
+                android:id="@+id/btnD"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:layout_weight="1"
+                android:background="@drawable/border_ring_selector"
+                android:gravity="bottom|center_horizontal"
+                android:maxWidth="48dip"
+                android:padding="16dp"
+                android:text="d"
+                android:textColor="@color/secondaryTextColor" />
+
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <ListView
+        android:layout_below="@+id/layoutChooseCourse"
+        android:id="@+id/choose_course_listview"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:foreground="?android:attr/selectableItemBackground" />
+
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/fab_chose_courses"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="false"
+        android:layout_alignParentBottom="true"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="16dp"
+        android:src="@mipmap/outline_done_white_24" />
+
+</RelativeLayout>

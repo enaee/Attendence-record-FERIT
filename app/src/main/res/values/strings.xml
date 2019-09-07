@@ -1,0 +1,16 @@
+<resources>
+    <string name="app_name">Zavrsni</string>
+
+
+    <string name="exception_message">must implement OnFragmentInteractionListener</string>
+
+
+    <string name="undergraduate">preddiplomski</string>
+    <string name="graduate">diplomski</string>
+    <string name="power_engineering">E</string>
+    <string name="communications_and_informatics">K</string>
+    <string name="computer_engineering">R</string>
+    <string name="automotive">A</string>
+    <string name="sign_out">Odjava</string>
+
+</resources>

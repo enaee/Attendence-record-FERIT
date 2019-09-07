@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "686833861280",
+    "firebase_url": "https://zavrsni-34117.firebaseio.com",
+    "project_id": "zavrsni-34117",
+    "storage_bucket": "zavrsni-34117.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:686833861280:android:21b484b99f90aa0e",
+        "android_client_info": {
+          "package_name": "hr.ferit.zavrsni"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "686833861280-gnmtefjl6vth67kvbnj37h3lfevg0s6m.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "hr.ferit.zavrsni",
+            "certificate_hash": "148c6c6278838f685a0c760bcd6d60cc6035ecd6"
+          }
+        },
+        {
+          "client_id": "686833861280-o8uprnur84jdi5snu99tesc1eubsdno2.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBR6DrZinSVn9fvNH-iNQjLdbSmiF7U74U"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "686833861280-o8uprnur84jdi5snu99tesc1eubsdno2.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
