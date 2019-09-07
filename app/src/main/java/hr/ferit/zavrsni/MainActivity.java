@@ -34,9 +34,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import hr.ferit.zavrsni.ChooseCourse.ChooseCourseFragment;
-import hr.ferit.zavrsni.CourseOverview.CourseOverviewFragment;
+import hr.ferit.zavrsni.Views.ChooseCourse.ChooseCourseFragment;
+import hr.ferit.zavrsni.Views.CourseOverview.CourseOverviewFragment;
 import hr.ferit.zavrsni.Models.EnrolledCourse;
+import hr.ferit.zavrsni.Views.EnrolledCoursesFragment;
 
 public class MainActivity extends AppCompatActivity implements EnrolledCoursesFragment.ItemClickListener, ChooseCourseFragment.addCoursesListener {
 

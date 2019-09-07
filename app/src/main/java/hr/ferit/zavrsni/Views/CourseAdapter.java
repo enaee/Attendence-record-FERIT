@@ -1,4 +1,4 @@
-package hr.ferit.zavrsni;
+package hr.ferit.zavrsni.Views;
 
 import android.app.Activity;
 import android.content.Context;
@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 
 import hr.ferit.zavrsni.Models.EnrolledCourse;
+import hr.ferit.zavrsni.R;
 
 public class CourseAdapter extends ArrayAdapter<EnrolledCourse> {
 

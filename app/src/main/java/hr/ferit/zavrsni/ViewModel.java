@@ -1,4 +1,7 @@
 package hr.ferit.zavrsni;
 
-public class ViewModel {
+import android.arch.lifecycle.LiveData;
+
+public class ViewModel extends LiveData {
+
 }

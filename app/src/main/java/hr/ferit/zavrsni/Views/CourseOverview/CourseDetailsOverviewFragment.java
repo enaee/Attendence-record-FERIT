@@ -1,4 +1,4 @@
-package hr.ferit.zavrsni.CourseOverview;
+package hr.ferit.zavrsni.Views.CourseOverview;
 
 
 import android.content.Context;
@@ -21,7 +21,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import java.io.Serializable;
 import java.util.Map;
 
-import hr.ferit.zavrsni.ChooseCourse.CourseElement;
+import hr.ferit.zavrsni.Views.ChooseCourse.CourseElement;
 import hr.ferit.zavrsni.Models.EnrolledCourse;
 import hr.ferit.zavrsni.R;
 

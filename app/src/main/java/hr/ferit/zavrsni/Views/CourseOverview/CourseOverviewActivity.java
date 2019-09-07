@@ -1,7 +1,6 @@
-package hr.ferit.zavrsni.CourseOverview;
+package hr.ferit.zavrsni.Views.CourseOverview;
 
-
-import android.content.res.ColorStateList;
+import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -12,9 +11,8 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
-import android.view.LayoutInflater;
+import android.support.v7.app.AppCompatActivity;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -28,14 +26,11 @@ import com.google.firebase.database.FirebaseDatabase;
 import java.util.HashMap;
 import java.util.Map;
 
-import hr.ferit.zavrsni.ChooseCourse.CourseElement;
+import hr.ferit.zavrsni.Views.ChooseCourse.CourseElement;
 import hr.ferit.zavrsni.Models.EnrolledCourse;
 import hr.ferit.zavrsni.R;
 
-/**
- * A simple {@link Fragment} subclass.
- */
-public class CourseOverviewFragment extends Fragment {
+public class CourseOverviewActivity extends AppCompatActivity {
 
     public static final String COURSE_ID = "courseID";
     public static final String USER_ID = "userID";
@@ -44,68 +39,52 @@ public class CourseOverviewFragment extends Fragment {
     private static final String ABSENT = "absent";
     private static final String SIGNED = "signed";
 
+
     private ViewPager mViewPager;
     private TabLayout mTabLayout;
     private TextView mCourseTitle;
     private String mCourseID, mUserID;
     private ProgressBar mProgressBar;
-    private ImageButton mDeleteButton;
+    private ImageButton mEditButton;
 
     private FirebaseDatabase mFirebaseDatabase;
     private DatabaseReference mEnrolledCourseReference;
 
     private Map<String, EnrolledCourse> mEnrolledCoursesMap = new HashMap<>();
     private EnrolledCourse mEnrolledCourse;
-    private View rootView;
 
-    public CourseOverviewFragment() {
-        // Required empty public constructor
-    }
-
-    public static CourseOverviewFragment newInstance(String courseID, String userID) {
-        CourseOverviewFragment fragment = new CourseOverviewFragment();
-        Bundle arguments = new Bundle();
-        arguments.putString(COURSE_ID, courseID);
-        arguments.putString(USER_ID, userID);
-        fragment.setArguments(arguments);
-
-        return fragment;
-    }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
-        rootView = inflater.inflate(R.layout.fragment_course_overview, container, false);
+    protected void onCreate(Bundle savedInstanceState) {
+
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_course_overview);
         initViews();
         setUpDatabase();
-
-        return rootView;
     }
 
     private void initViews() {
-
-        mCourseID = getArguments().getString(COURSE_ID);
-        mUserID = getArguments().getString(USER_ID);
-        mViewPager = rootView.findViewById(R.id.viewPager);
-        mTabLayout = rootView.findViewById(R.id.tab);
-        mCourseTitle = rootView.findViewById(R.id.tvCourseOverviewTitle);
-        mProgressBar = rootView.findViewById(R.id.courseOverviewProgressBarRound);
-        mDeleteButton = rootView.findViewById(R.id.btnDelete);
-        mDeleteButton.setOnClickListener(new View.OnClickListener() {
+        Intent intent = getIntent();
+        mCourseID = intent.getStringExtra(COURSE_ID);
+        mUserID = intent.getStringExtra(USER_ID);
+        mViewPager = findViewById(R.id.viewPager);
+        mTabLayout = findViewById(R.id.tab);
+        mCourseTitle = findViewById(R.id.tvCourseOverviewTitle);
+        mProgressBar = findViewById(R.id.courseOverviewProgressBarRound);
+        mEditButton = findViewById(R.id.btnDelete);
+        mEditButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mDeleteButton.setElevation(4);
-                mDeleteButton.setColorFilter(Color.RED);
-                mDeleteButton.setImageTintList(ColorStateList.valueOf(Color.RED));
+                mEditButton.setElevation(4);
+                mEditButton.setColorFilter(Color.RED);
                 mFirebaseDatabase.getReference("enrolledCourses/" + mUserID + "/" + mCourseID).removeValue();
-                getActivity().onBackPressed();
+                finish();
             }
         });
     }
 
     private void setUpPager() {
-        PagerAdapter pagerAdapter = new SlidePagerAdapter(getChildFragmentManager());
+        PagerAdapter pagerAdapter = new SlidePagerAdapter(getSupportFragmentManager());
         mViewPager.setAdapter(pagerAdapter);
         setUpTabLayout();
     }
@@ -173,7 +152,6 @@ public class CourseOverviewFragment extends Fragment {
                 //postavljanje naslova
                 mCourseTitle.setText(mEnrolledCourse.getName());
                 countPercentage();
-                //TODO pazi na setupPager
                 setUpPager();
                 setUpTabLayout();
             }
@@ -230,6 +208,6 @@ public class CourseOverviewFragment extends Fragment {
             return NUM_PAGES;
         }
     }
-
-
 }
+
+

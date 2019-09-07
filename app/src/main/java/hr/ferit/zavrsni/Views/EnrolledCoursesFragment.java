@@ -1,4 +1,4 @@
-package hr.ferit.zavrsni;
+package hr.ferit.zavrsni.Views;
 
 
 import android.content.Context;
@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import hr.ferit.zavrsni.Models.EnrolledCourse;
+import hr.ferit.zavrsni.R;
 
 
 /**
