@@ -31,22 +31,17 @@ import com.google.firebase.database.FirebaseDatabase;
 
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import hr.ferit.zavrsni.Views.ChooseCourse.ChooseCourseFragment;
 import hr.ferit.zavrsni.Views.CourseOverview.CourseOverviewFragment;
-import hr.ferit.zavrsni.Models.EnrolledCourse;
 import hr.ferit.zavrsni.Views.EnrolledCoursesFragment;
+import hr.ferit.zavrsni.interfaces.IEnrolledItemClickListener;
 
-public class MainActivity extends AppCompatActivity implements EnrolledCoursesFragment.ItemClickListener, ChooseCourseFragment.addCoursesListener {
+public class MainActivity extends AppCompatActivity implements IEnrolledItemClickListener, ChooseCourseFragment.addCoursesListener {
 
     public static final int RC_SIGN_IN = 1; //RC is request code
     public static final String ANONYMOUS = "anonymous";
-    public static final String USER_ID = "userID";
-    public static final String COURSE_ID = "courseID";
-    public static final String ENROLLED_COURSES = "enrolled_courses";
-    public static final String NEW_USER = "new user";
     public static boolean has_enrolled_courses = false;
     private boolean isChooseCourseOpen = false;
     private boolean isCourseOverviewOpen = false;
@@ -57,7 +52,6 @@ public class MainActivity extends AppCompatActivity implements EnrolledCoursesFr
     private TextView tvNoEnrolledCourses;
     private String mUserID;
     public static FloatingActionButton mFAB_AddCourse;
-    public static List<EnrolledCourse> mCourses;
     private Toolbar myToolbar;
 
 
@@ -81,12 +75,10 @@ public class MainActivity extends AppCompatActivity implements EnrolledCoursesFr
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-
-
         super.onCreate(savedInstanceState);
-
         setContentView(R.layout.activity_main);
         initializeUI();
+
         initializeFirebaseAuth();
     }
 

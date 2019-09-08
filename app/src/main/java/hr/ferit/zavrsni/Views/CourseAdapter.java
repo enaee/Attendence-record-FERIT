@@ -45,16 +45,6 @@ public class CourseAdapter extends ArrayAdapter<EnrolledCourse> {
             countPercentage();
         }
 
-
-        /*final TextView showExtraInfo = convertView.findViewById(R.id.extraContent);
-        courseNameTextView.setOnLongClickListener(new View.OnLongClickListener() {
-            @Override
-            public boolean onLongClick(View v) {
-                showExtraInfo.setVisibility(View.VISIBLE);
-                return true;
-            }
-        });*/
-
         return convertView;
     }
 

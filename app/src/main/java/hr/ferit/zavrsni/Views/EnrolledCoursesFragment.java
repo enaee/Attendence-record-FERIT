@@ -1,6 +1,8 @@
 package hr.ferit.zavrsni.Views;
 
 
+import android.arch.lifecycle.Observer;
+import android.arch.lifecycle.ViewModelProviders;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -10,62 +12,48 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.FrameLayout;
 import android.widget.ListView;
 import android.widget.Toast;
 
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import hr.ferit.zavrsni.Models.EnrolledCourse;
 import hr.ferit.zavrsni.R;
+import hr.ferit.zavrsni.interfaces.IEnrolledItemClickListener;
+import hr.ferit.zavrsni.viewmodels.EnrolledCoursesViewModel;
 
 
 /**
  * A simple {@link Fragment} subclass.
  */
 public class EnrolledCoursesFragment extends Fragment {
+
+
     private View mRootView;
     private String mUserID;
     // UI references
-
-    public static final int RC_SIGN_IN = 1; //RC is request code
-    public static final String ANONYMOUS = "anonymous";
     public static final String USER_ID = "userID";
-    public static final String COURSE_ID = "courseID";
-    public static final String ENROLLED_COURSES = "enrolled_courses";
-    public static final String NEW_USER = "new user";
-    public static boolean has_enrolled_courses = false;
-
     //Interface
-    private ItemClickListener mItemClickListener;
-
+    private IEnrolledItemClickListener mItemClickListener;
     //Firebase
     private FirebaseDatabase mFirebaseDatabase; //entry point for our app to access database
     private DatabaseReference mEnrolledCoursesReference;
     private ChildEventListener mChildEventListener; //we need it to fetch data to our app
-
-    //FirebaseAuthentification
-    private FirebaseAuth mFirebaseAuth;
-    private FirebaseAuth.AuthStateListener mAuthStateListener;
-    private FirebaseUser mFirebaseUser;
 
     //List of courses adapter
     private CourseAdapter mCourseAdapter;
     private ListView mCourseListView;
     private List<EnrolledCourse> mCourses;
 
-    public interface ItemClickListener {
-        void onItemClicked(String courseID, String userID, View view);
-    }
+    private EnrolledCoursesViewModel mViewModel;
+
+
 
     public EnrolledCoursesFragment() {
         // Required empty public constructor
@@ -87,6 +75,14 @@ public class EnrolledCoursesFragment extends Fragment {
         final View rootView = inflater.inflate(R.layout.fragment_enroled_courses, container, false);
         mRootView = rootView;
 
+        mViewModel = ViewModelProviders.of(this).get(EnrolledCoursesViewModel.class);
+        mViewModel.getEnrolledCourses().observe(this, new Observer<List<EnrolledCourse>>() {
+            @Override
+            public void onChanged(@Nullable List<EnrolledCourse> enrolledCourses) {
+
+            }
+        });
+
         if (getArguments().containsKey(USER_ID)) {
             mUserID = getArguments().getString(USER_ID);
         }
@@ -95,13 +91,12 @@ public class EnrolledCoursesFragment extends Fragment {
     }
 
     private void initializeUI() {
-        //Initialize reference to views
-        final FrameLayout frameLayout = mRootView.findViewById(R.id.fragment_overview);
 
         //initialize courses list and its adapter
         mCourseListView = mRootView.findViewById(R.id.coursesListView);
 
-        mCourses = new ArrayList<>();
+        //mCourses = new ArrayList<>();
+        mCourses = mViewModel.getEnrolledCourses().getValue();
         mCourseAdapter = new CourseAdapter(getContext(), R.layout.item_course, mCourses);
         mCourseAdapter.setNotifyOnChange(true);
         mCourseListView.setAdapter(mCourseAdapter);
@@ -120,7 +115,7 @@ public class EnrolledCoursesFragment extends Fragment {
                 return true;
             }
         });
-        attachDatabaseReadListener();
+        //attachDatabaseReadListener();
     }
 
     private void attachDatabaseReadListener() {
@@ -162,8 +157,8 @@ public class EnrolledCoursesFragment extends Fragment {
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-        if (context instanceof ItemClickListener) {
-            this.mItemClickListener = (ItemClickListener) context;
+        if (context instanceof IEnrolledItemClickListener) {
+            this.mItemClickListener = (IEnrolledItemClickListener) context;
         }
     }
 
