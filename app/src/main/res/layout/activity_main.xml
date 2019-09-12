@@ -3,9 +3,10 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:orientation="vertical"
-    android:background="@color/primaryColor"
+    android:background="@color/background"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
+
 
     <android.support.v7.widget.Toolbar
         android:id="@+id/my_toolbar"
@@ -14,16 +15,17 @@
         android:layout_height="?attr/actionBarSize"
         android:background="?attr/colorPrimary"
         android:theme="@style/ThemeOverlay.AppCompat.ActionBar"
-        app:popupTheme="@style/ThemeOverlay.AppCompat.Light" />
+        app:popupTheme="@style/ThemeOverlay.AppCompat.Light">
 
-    <TextView
-        android:id="@+id/tvNemaUpisanihKolegija"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+
+    </android.support.v7.widget.Toolbar>
+
+    <ProgressBar
+        android:id="@+id/loading_progressbar"
+        android:layout_width="111dp"
+        android:layout_height="81dp"
         android:layout_centerInParent="true"
-        android:text="Trentno nemaš upisanih kolegija :("
-        android:visibility="visible"
-        tools:visibility="visible" />
+        android:visibility="visible" />
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/fab_add_course"

@@ -1,4 +1,4 @@
-package hr.ferit.zavrsni.Views.ChooseCourse;
+package hr.ferit.zavrsni.Utils;
 
 import java.io.Serializable;
 

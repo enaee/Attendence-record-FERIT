@@ -5,12 +5,16 @@
     <string name="exception_message">must implement OnFragmentInteractionListener</string>
 
 
-    <string name="undergraduate">preddiplomski</string>
-    <string name="graduate">diplomski</string>
+    <string name="undergraduate">Preddiplomski</string>
+    <string name="graduate">Diplomski</string>
+
+    <style name="professional">Stručni</style>
     <string name="power_engineering">E</string>
     <string name="communications_and_informatics">K</string>
     <string name="computer_engineering">R</string>
     <string name="automotive">A</string>
     <string name="sign_out">Odjava</string>
+    <string name="searchByCourseId">Pretraži po šifri</string>
+    <string name="no_enrolled_courses">Još nema upisanih kolegija</string>
 
 </resources>

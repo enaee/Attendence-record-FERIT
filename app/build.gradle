@@ -69,6 +69,7 @@ dependencies {
     annotationProcessor 'android.arch.lifecycle:compiler:1.1.1'
 
 
+
     // Testing dependencies
     /*androidTestImplementation 'junit:junit:4.12'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'

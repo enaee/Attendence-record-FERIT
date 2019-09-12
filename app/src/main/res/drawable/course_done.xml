@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item>
+        <shape android:shape="oval">
+            <gradient
+                android:type="radial"
+                android:gradientRadius="90%p"
+                android:endColor="@color/secondaryColor"
+                android:startColor="@color/secondaryDarkColor" />
+
+            <size
+                android:height="150dp"
+                android:width="150dp"></size>
+        </shape>
+    </item>
+
+    <item
+        android:drawable="@drawable/ic_done_black_24dp"
+        android:left="30dp"
+        android:right="30dp"
+        android:top="30dp"
+        android:bottom="30dp"></item>
+</layer-list>

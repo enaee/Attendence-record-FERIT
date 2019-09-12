@@ -2,6 +2,7 @@ package hr.ferit.zavrsni;
 
 
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -17,28 +18,27 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
-import android.widget.TextView;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.firebase.ui.auth.AuthUI;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.ChildEventListener;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
+import hr.ferit.zavrsni.Models.User;
 import hr.ferit.zavrsni.Views.ChooseCourse.ChooseCourseFragment;
 import hr.ferit.zavrsni.Views.CourseOverview.CourseOverviewFragment;
 import hr.ferit.zavrsni.Views.EnrolledCoursesFragment;
 import hr.ferit.zavrsni.interfaces.IEnrolledItemClickListener;
+import hr.ferit.zavrsni.interfaces.INewUserListener;
+import hr.ferit.zavrsni.repository.FirebaseManager;
 
-public class MainActivity extends AppCompatActivity implements IEnrolledItemClickListener, ChooseCourseFragment.addCoursesListener {
+public class MainActivity extends AppCompatActivity implements IEnrolledItemClickListener, ChooseCourseFragment.addCoursesListener, INewUserListener {
 
     public static final int RC_SIGN_IN = 1; //RC is request code
     public static final String ANONYMOUS = "anonymous";
@@ -49,22 +49,16 @@ public class MainActivity extends AppCompatActivity implements IEnrolledItemClic
     private boolean mShouldCoursesBeAdded;
     private Map<String, Object> mCoursesToAdd = new HashMap<>();
 
-    private TextView tvNoEnrolledCourses;
     private String mUserID;
     public static FloatingActionButton mFAB_AddCourse;
     private Toolbar myToolbar;
-
-
-    //Firebase
-    private FirebaseDatabase mFirebaseDatabase; //entry point for our app to access database
-    private DatabaseReference mUsersDatabaseReference; //references to specific point in database
-    private DatabaseReference mEnrolledCoursesReference;
-    private ChildEventListener mChildEventListener; //we need it to fetch data to our app
+    private ProgressBar mLoadingProgressbar;
 
     //FirebaseAuthentification
     private FirebaseAuth mFirebaseAuth;
     private FirebaseAuth.AuthStateListener mAuthStateListener;
     private FirebaseUser mFirebaseUser;
+    private FirebaseManager mRepository;
 
 
     //Fragments
@@ -78,28 +72,24 @@ public class MainActivity extends AppCompatActivity implements IEnrolledItemClic
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         initializeUI();
-
         initializeFirebaseAuth();
+        mFirebaseAuth = FirebaseAuth.getInstance();
+
     }
 
     private void initializeFirebaseAuth() {
-        mFirebaseDatabase = FirebaseDatabase.getInstance();
-        mUsersDatabaseReference = mFirebaseDatabase.getReference().child("users");
-        mFirebaseAuth = FirebaseAuth.getInstance();
 
         mAuthStateListener = new FirebaseAuth.AuthStateListener() {
             @Override
             public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
-                mFirebaseUser = firebaseAuth.getCurrentUser();
-                if (mFirebaseUser != null) {
-                    mUsersDatabaseReference.child(mFirebaseUser.getUid()).child("name").setValue(mFirebaseUser.getDisplayName());
-                    if (mUsersDatabaseReference.child(mFirebaseUser.getUid()).child("name").getKey() == null) {
-                        mUsersDatabaseReference.child(mFirebaseUser.getUid()).child("name").setValue(mFirebaseUser.getDisplayName());
-                    }
-                    onSignedInInitialize(mFirebaseUser.getUid());
+                mFirebaseUser = mFirebaseAuth.getCurrentUser();
 
+                if (mFirebaseUser != null) {
+
+                    mUserID = mFirebaseUser.getUid();
+                    setRepository();
                 } else {
-                    onSignedOutCleanup();
+
                     startActivityForResult(
                             AuthUI.getInstance()
                                     .createSignInIntentBuilder()
@@ -107,6 +97,7 @@ public class MainActivity extends AppCompatActivity implements IEnrolledItemClic
                                     .setAvailableProviders(Arrays.asList(
                                             new AuthUI.IdpConfig.GoogleBuilder().build(),
                                             new AuthUI.IdpConfig.EmailBuilder().build()))
+                                    .setTheme(R.style.MyTheme)
                                     .build(),
                             RC_SIGN_IN);
                 }
@@ -114,49 +105,73 @@ public class MainActivity extends AppCompatActivity implements IEnrolledItemClic
         };
     }
 
+    public void setRepository() {
+        mRepository = FirebaseManager.getInstance(mUserID);
+        mRepository.setUserInterface(this);
+        mRepository.addUserListener();
+    }
     private void initializeUI() {
         //Initialize reference to views
-        myToolbar = (Toolbar) findViewById(R.id.my_toolbar);
+        myToolbar = findViewById(R.id.my_toolbar);
+        myToolbar.setTitle("");
         setSupportActionBar(myToolbar);
+
+        mLoadingProgressbar = findViewById(R.id.loading_progressbar);
+
 
         mFAB_AddCourse = findViewById(R.id.fab_add_course);
         mUserID = ANONYMOUS;
-        tvNoEnrolledCourses = findViewById(R.id.tvNemaUpisanihKolegija);
-        if (has_enrolled_courses) tvNoEnrolledCourses.setVisibility(View.GONE);
         mFragmentManager = getSupportFragmentManager();
-
-
         mFAB_AddCourse.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 replaceFragments();
             }
         });
-
-
     }
 
     private void replaceFragments() {
         FragmentTransaction fragmentTransaction = mFragmentManager.beginTransaction();
-        Animation changeTo = AnimationUtils.loadAnimation(this, R.anim.fab_change_to);
-        Animation changeFrom = AnimationUtils.loadAnimation(this, R.anim.fab_change_from);
         if (!isChooseCourseOpen) {
             isChooseCourseOpen = true;
-            fragmentTransaction.replace(R.id.fragment, mChooseCoursesFragment).addToBackStack(null).commit();
-            mFAB_AddCourse.startAnimation(changeTo);
+            myToolbar.setBackgroundColor(Color.WHITE);
+            fragmentTransaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE).replace(R.id.fragment, mChooseCoursesFragment).addToBackStack(null).commit();
+            animateFAB();
+
         } else {
             isChooseCourseOpen = false;
-            addToDatabase();
+            myToolbar.setVisibility(View.VISIBLE);
+            myToolbar.setBackgroundColor(Color.TRANSPARENT);
+            if (mShouldCoursesBeAdded) addToDatabase();
             mFragmentManager.popBackStack();
-            fragmentTransaction.replace(R.id.fragment, mEnrolledCoursesFragment).commit();
-            mFAB_AddCourse.startAnimation(changeFrom);
+            fragmentTransaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE).replace(R.id.fragment, mEnrolledCoursesFragment).commit();
+            animateFAB();
         }
+    }
+
+    private void animateFAB() {
+        Animation addToCancel = AnimationUtils.loadAnimation(this, R.anim.fab_add_to_cancel);
+        Animation cancelToAdd = AnimationUtils.loadAnimation(this, R.anim.fab_cancel_to_add);
+        Animation cancelToCheck = AnimationUtils.loadAnimation(this, R.anim.fab_cancel_to_check);
+        Animation checkToAdd = AnimationUtils.loadAnimation(this, R.anim.fab_check_to_add);
+        //otvaramo choose course i jos nema odabranih
+        if (isChooseCourseOpen && !mShouldCoursesBeAdded)
+            mFAB_AddCourse.startAnimation(addToCancel);
+        //zatvorili smo choose course i nismo odabrali
+        if (!isChooseCourseOpen && !mShouldCoursesBeAdded)
+            mFAB_AddCourse.startAnimation(cancelToAdd);
+        //zatvorili smo choose course nakon dodavanja
+        if (!isChooseCourseOpen && mShouldCoursesBeAdded) mFAB_AddCourse.startAnimation(checkToAdd);
+        //otvoren je i odabrali smo kolegije
+        if (isChooseCourseOpen && mShouldCoursesBeAdded)
+            mFAB_AddCourse.startAnimation(cancelToCheck);
+        //otvoren i odznačili smo sve
     }
 
     private void addToDatabase() {
         if (mShouldCoursesBeAdded) {
             for (String key : mCoursesToAdd.keySet()) {
-                mEnrolledCoursesReference.child(key).setValue(mCoursesToAdd.get(key));
+                FirebaseDatabase.getInstance().getReference().child("enrolledCourses").child(mUserID).child(key).setValue(mCoursesToAdd.get(key));
             }
         }
         mCoursesToAdd.clear();
@@ -164,52 +179,15 @@ public class MainActivity extends AppCompatActivity implements IEnrolledItemClic
 
     private void onSignedInInitialize(String userID) {
         mUserID = userID;
-        mEnrolledCoursesReference = mFirebaseDatabase.getReference().child("enrolledCourses").child(mFirebaseUser.getUid());
-        attachDatabaseReadListener();
-        setUpFragments();
-    }
-
-    private void attachDatabaseReadListener() {
-        if (mChildEventListener == null) {
-
-            mChildEventListener = new ChildEventListener() {
-                @Override
-                public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
-                    if (dataSnapshot.hasChildren()) {
-                        has_enrolled_courses = true;
-                        tvNoEnrolledCourses.setVisibility(TextView.INVISIBLE);
-                        //TODO dodaj kolegije u map, i kada se dogodi brisanje, na onBackPressed provjeri je li Map empty
-                    } else tvNoEnrolledCourses.setVisibility(View.GONE);
-
-                }
-
-                @Override
-                public void onChildChanged(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
-
-                }
-
-                @Override
-                public void onChildRemoved(@NonNull DataSnapshot dataSnapshot) {
-
-                }
-
-                @Override
-                public void onChildMoved(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
-                }
-
-                @Override
-                public void onCancelled(@NonNull DatabaseError databaseError) {
-                }
-            };
-            mEnrolledCoursesReference.addChildEventListener(mChildEventListener);
-
-        }
+        if (!isChooseCourseOpen && !isCourseOverviewOpen) setUpFragments();
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.main_menu, menu);
+        menu.findItem(R.id.search_icon).setVisible(false);
+        menu.findItem(R.id.deleteItem).setVisible(false);
         return true;
     }
 
@@ -217,7 +195,18 @@ public class MainActivity extends AppCompatActivity implements IEnrolledItemClic
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.sign_out_menu:
+                onSignedOutCleanup();
                 AuthUI.getInstance().signOut(this);
+                startActivityForResult(
+                        AuthUI.getInstance()
+                                .createSignInIntentBuilder()
+                                .setIsSmartLockEnabled(false)
+                                .setAvailableProviders(Arrays.asList(
+                                        new AuthUI.IdpConfig.GoogleBuilder().build(),
+                                        new AuthUI.IdpConfig.EmailBuilder().build()))
+                                .setTheme(R.style.MyTheme)
+                                .build(),
+                        RC_SIGN_IN);
                 return true;
             case R.id.user_icon:
                 Toast.makeText(this, "Signed in as " + mFirebaseUser.getDisplayName(), Toast.LENGTH_SHORT).show();
@@ -230,16 +219,8 @@ public class MainActivity extends AppCompatActivity implements IEnrolledItemClic
 
     private void onSignedOutCleanup() {
         mUserID = ANONYMOUS;
-        detachDatabaseReadListener();
+        mRepository.removeListeners();
     }
-
-    private void detachDatabaseReadListener() {
-        if (mChildEventListener != null) {
-            mEnrolledCoursesReference.removeEventListener(mChildEventListener);
-            mChildEventListener = null;
-        }
-    }
-
 
     @Override
     protected void onPause() {
@@ -247,17 +228,12 @@ public class MainActivity extends AppCompatActivity implements IEnrolledItemClic
         if (mAuthStateListener != null) {
             mFirebaseAuth.removeAuthStateListener(mAuthStateListener);
         }
-        detachDatabaseReadListener();
+        //detachDatabaseReadListener();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        if (!has_enrolled_courses) {
-            tvNoEnrolledCourses.setVisibility(TextView.VISIBLE);
-        } else {
-            tvNoEnrolledCourses.setVisibility(TextView.INVISIBLE);
-        }
         mFirebaseAuth.addAuthStateListener(mAuthStateListener);
 
     }
@@ -267,6 +243,7 @@ public class MainActivity extends AppCompatActivity implements IEnrolledItemClic
         mEnrolledCoursesFragment = EnrolledCoursesFragment.newInstance(mUserID);
         FragmentTransaction fragmentTransaction = mFragmentManager.beginTransaction();
         fragmentTransaction.add(R.id.fragment, mEnrolledCoursesFragment).commit();
+        mLoadingProgressbar.setVisibility(View.GONE);
     }
 
     @Override
@@ -290,12 +267,14 @@ public class MainActivity extends AppCompatActivity implements IEnrolledItemClic
 
     private void checkWhatFragmentIsOpen() {
         if (isCourseOverviewOpen) {
-            isChooseCourseOpen = false;
-            myToolbar.setVisibility(View.VISIBLE);
+            isCourseOverviewOpen = false;
+            myToolbar.setBackgroundColor(Color.TRANSPARENT);
             mFAB_AddCourse.setAlpha((float) 1);
         } else if (isChooseCourseOpen) {
             isChooseCourseOpen = false;
-            Animation changeFrom = AnimationUtils.loadAnimation(this, R.anim.fab_change_from);
+            myToolbar.setVisibility(View.VISIBLE);
+            myToolbar.setBackgroundColor(Color.TRANSPARENT);
+            Animation changeFrom = AnimationUtils.loadAnimation(this, R.anim.fab_check_to_add);
             mFAB_AddCourse.setAnimation(changeFrom);
         }
     }
@@ -304,7 +283,7 @@ public class MainActivity extends AppCompatActivity implements IEnrolledItemClic
     public void onItemClicked(String courseID, String userID, View view) {
         isCourseOverviewOpen = true;
         mFAB_AddCourse.setAlpha((float) 0);
-        myToolbar.setVisibility(View.GONE);
+        myToolbar.setBackgroundColor(Color.WHITE);
         CourseOverviewFragment fragment = CourseOverviewFragment.newInstance(courseID, userID);
         FragmentManager manager = getSupportFragmentManager();
         FragmentTransaction transaction = manager.beginTransaction();
@@ -313,8 +292,23 @@ public class MainActivity extends AppCompatActivity implements IEnrolledItemClic
 
     @Override
     public void checkIfShouldAddCourses(Boolean shouldCoursesBeAdded, Map<String, Object> courses) {
+        if (mShouldCoursesBeAdded != shouldCoursesBeAdded) {
+            mShouldCoursesBeAdded = shouldCoursesBeAdded;
+            animateFAB();
+        }
         mShouldCoursesBeAdded = shouldCoursesBeAdded;
         mCoursesToAdd = courses;
+
+    }
+
+    @Override
+    public void onUsersInitialize() {
+        if (!mRepository.checkIfNewUSer(mUserID)) {
+            onSignedInInitialize(mUserID);
+        } else {
+            User user = new User(mUserID, mFirebaseUser.getDisplayName());
+            mRepository.addUserToDatabase(user);
+        }
 
     }
 }

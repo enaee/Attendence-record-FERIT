@@ -13,10 +13,12 @@
 
         android:useLevel="true">
 
+
         <gradient
             android:type="sweep"
-            android:endColor="@color/secondaryDarkColor"
-            android:startColor="@color/secondaryColor" />
+            android:startColor="#01579B"
+            android:centerColor="@color/secondaryDarkColor"
+            android:endColor="#B71C1C" />
 
         <padding
             android:bottom="1dp"

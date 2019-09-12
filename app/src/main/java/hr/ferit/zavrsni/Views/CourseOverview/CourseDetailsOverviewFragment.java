@@ -1,29 +1,28 @@
 package hr.ferit.zavrsni.Views.CourseOverview;
 
 
-import android.content.Context;
+import android.arch.lifecycle.Observer;
+import android.arch.lifecycle.ViewModelProviders;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-
 import java.io.Serializable;
 import java.util.Map;
 
-import hr.ferit.zavrsni.Views.ChooseCourse.CourseElement;
 import hr.ferit.zavrsni.Models.EnrolledCourse;
 import hr.ferit.zavrsni.R;
+import hr.ferit.zavrsni.Utils.CourseElement;
+import hr.ferit.zavrsni.viewmodels.CourseOverviewViewModel;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -32,7 +31,6 @@ public class CourseDetailsOverviewFragment extends Fragment {
 
     private static final String HELPER = "helper";
     private static final String ENROLLED_COURSE = "enrolled_course";
-
     private static final String TOTAL = "total";
     private static final String PRESENT = "present";
     private static final String ABSENT = "absent";
@@ -43,13 +41,13 @@ public class CourseDetailsOverviewFragment extends Fragment {
     private LinearLayout mLayoutPresent, mLayoutAbsent, mLayoutSigned;
     private CourseElement courseElement;
     private ViewGroup mRootView;
-    private FirebaseDatabase mFirebaseDatabase;
-    private DatabaseReference mEnrolledCourseReference;
     private String mUserID, mCourseID, mCourseType;
     private EnrolledCourse mEnrolledCourse;
     private Map<String, Float> mCourseTypeAttendance;
     private EditText mInputSigned;
     private ImageButton mBtnDone;
+
+    private CourseOverviewViewModel mViewModel;
 
     public CourseDetailsOverviewFragment() {
         // Required empty public constructor
@@ -58,23 +56,22 @@ public class CourseDetailsOverviewFragment extends Fragment {
     public static CourseDetailsOverviewFragment newInstance(Serializable helper, Serializable enrolledCourse) {
         CourseDetailsOverviewFragment fragment = new CourseDetailsOverviewFragment();
         Bundle arguments = new Bundle();
-        arguments.putSerializable(ENROLLED_COURSE, enrolledCourse);
         arguments.putSerializable(HELPER, helper);
+        arguments.putSerializable(ENROLLED_COURSE, enrolledCourse);
         fragment.setArguments(arguments);
         return fragment;
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
         mRootView = (ViewGroup) inflater.inflate(R.layout.fragment_course_details_overview, container, false);
         if (getArguments() != null) {
             courseElement = (CourseElement) getArguments().getSerializable(HELPER);
             mEnrolledCourse = (EnrolledCourse) getArguments().getSerializable(ENROLLED_COURSE);
         }
         initialize();
-        setUpView();
-        firebaseInit();
+
+
         return mRootView;
     }
 
@@ -99,6 +96,7 @@ public class CourseDetailsOverviewFragment extends Fragment {
             setUpCourseData();
         }
     }
+
 
     private void setUpCourseData() {
         switch (mCourseType) {
@@ -129,12 +127,12 @@ public class CourseDetailsOverviewFragment extends Fragment {
             setNumbers();
             setClickListeners();
         } else {
-            TextView tvpresent = mRootView.findViewById(R.id.tvPresent);
-            tvpresent.setTextColor(Color.parseColor("#66666666"));
-            TextView tvabsent = mRootView.findViewById(R.id.tvAbsent);
-            tvabsent.setTextColor(Color.parseColor("#66666666"));
-            TextView tvsigned = mRootView.findViewById(R.id.tvSigned);
-            tvsigned.setTextColor(Color.parseColor("#66666666"));
+            TextView tvPresent = mRootView.findViewById(R.id.tvPresent);
+            tvPresent.setTextColor(Color.parseColor("#66666666"));
+            TextView tvAbsent = mRootView.findViewById(R.id.tvAbsent);
+            tvAbsent.setTextColor(Color.parseColor("#66666666"));
+            TextView tvSigned = mRootView.findViewById(R.id.tvSigned);
+            tvSigned.setTextColor(Color.parseColor("#66666666"));
             mLayoutPresent.setBackgroundColor(Color.parseColor("#55ffffff"));
             mLayoutAbsent.setBackgroundColor(Color.parseColor("#55ffffff"));
             mLayoutSigned.setBackgroundColor(Color.parseColor("#55ffffff"));
@@ -147,10 +145,6 @@ public class CourseDetailsOverviewFragment extends Fragment {
         mTotalSigned.setText(Float.toString(mCourseTypeAttendance.get(SIGNED)));
     }
 
-    private void firebaseInit() {
-        mFirebaseDatabase = FirebaseDatabase.getInstance();
-        mEnrolledCourseReference = mFirebaseDatabase.getReference("enrolledCourses/" + mUserID + "/" + mCourseID);
-    }
 
     private void setClickListeners() {
         mLayoutPresent.setOnClickListener(new View.OnClickListener() {
@@ -171,31 +165,7 @@ public class CourseDetailsOverviewFragment extends Fragment {
                 updateCourseData(SIGNED);
             }
         });
-        mBtnDone.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                float newCount = Float.parseFloat(mInputSigned.getText().toString());
-                mCourseTypeAttendance.put(SIGNED, newCount);
-                mEnrolledCourseReference.child(mCourseType + "/" + SIGNED).setValue(newCount);
-                mInputSigned.setVisibility(View.GONE);
-                mTotalSigned.setVisibility(TextView.VISIBLE);
-                mBtnDone.setVisibility(View.GONE);
-                InputMethodManager inputManager = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
-                inputManager.hideSoftInputFromWindow(getView().getWindowToken(), 0);
-                setNumbers();
-            }
-        });
-        mLayoutSigned.setOnLongClickListener(new View.OnLongClickListener() {
-            @Override
-            public boolean onLongClick(View v) {
-                mInputSigned.setHint(Float.toString(mCourseTypeAttendance.get(SIGNED)));
-                mInputSigned.setVisibility(View.VISIBLE);
-                mTotalSigned.setVisibility(TextView.GONE);
-                mBtnDone.setVisibility(View.VISIBLE);
 
-                return true;
-            }
-        });
 
     }
 
@@ -204,7 +174,8 @@ public class CourseDetailsOverviewFragment extends Fragment {
             mCourseTypeAttendance.put(typeOfAttendance, mCourseTypeAttendance.get(typeOfAttendance) + 1);
             float newCount = mCourseTypeAttendance.get(typeOfAttendance);
             setNumbers();
-            mEnrolledCourseReference.child(mCourseType + "/" + typeOfAttendance).setValue(newCount);
+            //mEnrolledCourseReference.child(mCourseType + "/" + typeOfAttendance).setValue(newCount);
+            mViewModel.setCourseData(mCourseType, typeOfAttendance, newCount);
         } else {
             Toast.makeText(getContext(), "Sorry, you've used all your input.", Toast.LENGTH_SHORT).show();
         }
@@ -221,7 +192,18 @@ public class CourseDetailsOverviewFragment extends Fragment {
         }
     }
 
-
+    @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        mViewModel = ViewModelProviders.of(getActivity()).get(CourseOverviewViewModel.class);
+        mViewModel.getCourse().observe(getViewLifecycleOwner(), new Observer<EnrolledCourse>() {
+            @Override
+            public void onChanged(@Nullable EnrolledCourse enrolledCourse) {
+                mEnrolledCourse = enrolledCourse;
+            }
+        });
+        setUpView();
+    }
 }
 
 

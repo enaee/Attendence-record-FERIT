@@ -1,10 +1,11 @@
 package hr.ferit.zavrsni.Views.CourseOverview;
 
 
-import android.content.res.ColorStateList;
+import android.animation.ObjectAnimator;
+import android.arch.lifecycle.Observer;
+import android.arch.lifecycle.ViewModelProviders;
 import android.graphics.Color;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
@@ -13,28 +14,21 @@ import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-import com.google.firebase.database.ChildEventListener;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-
-import java.util.HashMap;
-import java.util.Map;
-
-import hr.ferit.zavrsni.Views.ChooseCourse.CourseElement;
 import hr.ferit.zavrsni.Models.EnrolledCourse;
 import hr.ferit.zavrsni.R;
+import hr.ferit.zavrsni.Utils.CourseElement;
+import hr.ferit.zavrsni.viewmodels.CourseOverviewViewModel;
 
-/**
- * A simple {@link Fragment} subclass.
- */
+
+@SuppressWarnings("ConstantConditions")
 public class CourseOverviewFragment extends Fragment {
 
     public static final String COURSE_ID = "courseID";
@@ -43,20 +37,16 @@ public class CourseOverviewFragment extends Fragment {
     private static final String PRESENT = "present";
     private static final String ABSENT = "absent";
     private static final String SIGNED = "signed";
-
+    public CourseOverviewViewModel mViewModel;
     private ViewPager mViewPager;
     private TabLayout mTabLayout;
-    private TextView mCourseTitle;
+    private TextView mCourseTitle, mPercentageLeft, mPercentagePresentSigned, mPercentageAbsent, mTvLeft;
     private String mCourseID, mUserID;
-    private ProgressBar mProgressBar;
-    private ImageButton mDeleteButton;
-
-    private FirebaseDatabase mFirebaseDatabase;
-    private DatabaseReference mEnrolledCourseReference;
-
-    private Map<String, EnrolledCourse> mEnrolledCoursesMap = new HashMap<>();
+    private ProgressBar mProgressBarPresentSigned, mProgressbarAbsent;
+    private ImageView ivCoureDone;
     private EnrolledCourse mEnrolledCourse;
     private View rootView;
+
 
     public CourseOverviewFragment() {
         // Required empty public constructor
@@ -73,35 +63,107 @@ public class CourseOverviewFragment extends Fragment {
     }
 
     @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setHasOptionsMenu(true);
+    }
+
+    @Override
+    public void onPrepareOptionsMenu(final Menu menu) {
+        menu.findItem(R.id.user_icon).setVisible(false);
+        menu.findItem(R.id.sign_out_menu).setVisible(false);
+        menu.findItem(R.id.search_icon).setVisible(false);
+        menu.findItem(R.id.deleteItem).setVisible(true);
+        super.onPrepareOptionsMenu(menu);
+    }
+
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.deleteItem:
+                mViewModel.deleteEnrolledCourse();
+                getActivity().onBackPressed();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+
+        }
+    }
+
+
+    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         rootView = inflater.inflate(R.layout.fragment_course_overview, container, false);
         initViews();
-        setUpDatabase();
 
         return rootView;
     }
 
-    private void initViews() {
+    @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        mViewModel = ViewModelProviders.of(getActivity()).get(CourseOverviewViewModel.class);
+        mViewModel.init(mUserID, mCourseID);
+        mViewModel.getCourse().observe(getViewLifecycleOwner(), new Observer<EnrolledCourse>() {
+            @Override
+            public void onChanged(@Nullable EnrolledCourse enrolledCourse) {
+                mEnrolledCourse = mViewModel.getCourse().getValue();
+                setCourseData();
+            }
+        });
+        setUpPager();
 
+    }
+
+
+    private void initViews() {
         mCourseID = getArguments().getString(COURSE_ID);
         mUserID = getArguments().getString(USER_ID);
         mViewPager = rootView.findViewById(R.id.viewPager);
         mTabLayout = rootView.findViewById(R.id.tab);
+
         mCourseTitle = rootView.findViewById(R.id.tvCourseOverviewTitle);
-        mProgressBar = rootView.findViewById(R.id.courseOverviewProgressBarRound);
-        mDeleteButton = rootView.findViewById(R.id.btnDelete);
-        mDeleteButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mDeleteButton.setElevation(4);
-                mDeleteButton.setColorFilter(Color.RED);
-                mDeleteButton.setImageTintList(ColorStateList.valueOf(Color.RED));
-                mFirebaseDatabase.getReference("enrolledCourses/" + mUserID + "/" + mCourseID).removeValue();
-                getActivity().onBackPressed();
-            }
-        });
+        mProgressBarPresentSigned = rootView.findViewById(R.id.courseOverviewProgressbarPresenceSigned);
+        mProgressbarAbsent = rootView.findViewById(R.id.courseOverviewProgressbarAbsent);
+        mPercentageLeft = rootView.findViewById(R.id.percentage_left);
+        mPercentagePresentSigned = rootView.findViewById(R.id.tvPercentagePresent);
+        mPercentageAbsent = rootView.findViewById(R.id.tvPercentageAbsent);
+        mTvLeft = rootView.findViewById(R.id.tvLeft);
+        ivCoureDone = rootView.findViewById(R.id.ivCourseDone);
+
+        mEnrolledCourse = new EnrolledCourse();
+    }
+
+    private void setCourseData() {
+
+        int perc = mViewModel.countPercentage(mEnrolledCourse);
+        int abs = mViewModel.countAbsence(mEnrolledCourse);
+        int total = perc + abs;
+        mCourseTitle.setText(mViewModel.getCourse().getValue().getName());
+        if (total >= 100) {
+            mPercentageLeft.setVisibility(View.GONE);
+            mTvLeft.setVisibility(View.GONE);
+            ObjectAnimator.ofFloat(ivCoureDone, "alpha", 0f, 1f).getStartDelay();
+            ivCoureDone.setVisibility(View.VISIBLE);
+
+        } else {
+            mPercentageLeft.setText(total + "%");
+        }
+        mPercentagePresentSigned.setText(perc + "%\nPrisutnost i upis");
+        mPercentageAbsent.setText(abs + "%\nOdsutnost");
+
+        if (abs >= 30) {
+            mPercentageAbsent.setTextColor(Color.parseColor("#B00020"));
+        }
+        if (abs >= 20) {
+            mPercentageAbsent.setTextColor(Color.parseColor("#C77800"));
+        } else {
+            mProgressBarPresentSigned.setProgress(perc);
+            mProgressbarAbsent.setProgress(perc + abs);
+        }
     }
 
     private void setUpPager() {
@@ -124,75 +186,17 @@ public class CourseOverviewFragment extends Fragment {
                     mTabLayout.getTabAt(3).setText("KV");
             }
         }
-
     }
 
-    private void setUpDatabase() {
-        mFirebaseDatabase = FirebaseDatabase.getInstance();
-        mEnrolledCourseReference = mFirebaseDatabase.getReference("enrolledCourses/" + mUserID/*+"/"+mCourseID*/);
-        mEnrolledCourseReference.addChildEventListener(new ChildEventListener() {
-            @Override
-            public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
-                mEnrolledCoursesMap.put(dataSnapshot.getKey(), dataSnapshot.getValue(EnrolledCourse.class));
-                setCourseData();
-            }
 
-            @Override
-            public void onChildChanged(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
-                mEnrolledCoursesMap.put(dataSnapshot.getKey(), dataSnapshot.getValue(EnrolledCourse.class));
-                updateData();
-            }
-
-            @Override
-            public void onChildRemoved(@NonNull DataSnapshot dataSnapshot) {
-            }
-
-            @Override
-            public void onChildMoved(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-            }
-        });
+    @Override
+    public void onDetach() {
+        super.onDetach();
     }
 
-    private void updateData() {
-        if (mEnrolledCoursesMap.containsKey(mCourseID)) {
-            mEnrolledCourse = mEnrolledCoursesMap.get(mCourseID);
-            if (mEnrolledCourse != null) {
-                countPercentage();
-            }
-        }
-    }
-
-    private void setCourseData() {
-        if (mEnrolledCoursesMap.containsKey(mCourseID)) {
-            mEnrolledCourse = mEnrolledCoursesMap.get(mCourseID);
-            if (mEnrolledCourse != null) {
-                //postavljanje naslova
-                mCourseTitle.setText(mEnrolledCourse.getName());
-                countPercentage();
-                //TODO pazi na setupPager
-                setUpPager();
-                setUpTabLayout();
-            }
-        }
-    }
-
-    private void countPercentage() {
-        Map<String, Float> p = mEnrolledCourse.getP();
-        Map<String, Float> a = mEnrolledCourse.getA();
-        Map<String, Float> l = mEnrolledCourse.getL();
-        Map<String, Float> k = mEnrolledCourse.getK();
-        float total = p.get(TOTAL) + a.get(TOTAL) + l.get(TOTAL) + k.get(TOTAL);
-        float present = p.get(PRESENT) + a.get(PRESENT) + l.get(PRESENT) + k.get(PRESENT);
-        float signed = p.get(SIGNED) + a.get(SIGNED) + l.get(SIGNED) + k.get(SIGNED);
-        float absent = p.get(ABSENT) + a.get(ABSENT) + l.get(ABSENT) + k.get(ABSENT);
-        float presentAndSigned = present + signed;
-        float percentage = (presentAndSigned / total) * 100;
-        mProgressBar.setSecondaryProgress((int) percentage);
-        //mProgressBar.setProgress((int)percentage);
+    @Override
+    public void onStop() {
+        super.onStop();
     }
 
 
