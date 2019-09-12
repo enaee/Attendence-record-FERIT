@@ -66,30 +66,53 @@ public class MainActivity extends AppCompatActivity implements IEnrolledItemClic
     private Fragment mEnrolledCoursesFragment;
     private Fragment mChooseCoursesFragment;
 
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.main_menu, menu);
+        menu.findItem(R.id.search_icon).setVisible(false);
+        menu.findItem(R.id.deleteItem).setVisible(false);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.sign_out_menu:
+                AuthUI.getInstance().signOut(this);
+                return true;
+            case R.id.user_icon:
+                Toast.makeText(this, "Signed in as " + mFirebaseUser.getDisplayName(), Toast.LENGTH_SHORT).show();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+
+        }
+    }
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        initializeUI();
+        mUserID = ANONYMOUS;
         initializeFirebaseAuth();
-        mFirebaseAuth = FirebaseAuth.getInstance();
+        initializeUI();
 
     }
 
     private void initializeFirebaseAuth() {
-
+        mFirebaseAuth = FirebaseAuth.getInstance();
         mAuthStateListener = new FirebaseAuth.AuthStateListener() {
             @Override
             public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
                 mFirebaseUser = mFirebaseAuth.getCurrentUser();
 
                 if (mFirebaseUser != null) {
-
                     mUserID = mFirebaseUser.getUid();
                     setRepository();
                 } else {
-
+                    onSignedOutCleanup();
                     startActivityForResult(
                             AuthUI.getInstance()
                                     .createSignInIntentBuilder()
@@ -105,22 +128,26 @@ public class MainActivity extends AppCompatActivity implements IEnrolledItemClic
         };
     }
 
+    private void onSignedInInitialize(String userID) {
+        mUserID = userID;
+        if (!isChooseCourseOpen && !isCourseOverviewOpen) setUpFragments();
+    }
+
+
+
     public void setRepository() {
         mRepository = FirebaseManager.getInstance(mUserID);
         mRepository.setUserInterface(this);
         mRepository.addUserListener();
+        if (!mUserID.equals(ANONYMOUS)) onUsersInitialize();
     }
     private void initializeUI() {
         //Initialize reference to views
         myToolbar = findViewById(R.id.my_toolbar);
         myToolbar.setTitle("");
         setSupportActionBar(myToolbar);
-
         mLoadingProgressbar = findViewById(R.id.loading_progressbar);
-
-
         mFAB_AddCourse = findViewById(R.id.fab_add_course);
-        mUserID = ANONYMOUS;
         mFragmentManager = getSupportFragmentManager();
         mFAB_AddCourse.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -129,7 +156,6 @@ public class MainActivity extends AppCompatActivity implements IEnrolledItemClic
             }
         });
     }
-
     private void replaceFragments() {
         FragmentTransaction fragmentTransaction = mFragmentManager.beginTransaction();
         if (!isChooseCourseOpen) {
@@ -148,7 +174,6 @@ public class MainActivity extends AppCompatActivity implements IEnrolledItemClic
             animateFAB();
         }
     }
-
     private void animateFAB() {
         Animation addToCancel = AnimationUtils.loadAnimation(this, R.anim.fab_add_to_cancel);
         Animation cancelToAdd = AnimationUtils.loadAnimation(this, R.anim.fab_cancel_to_add);
@@ -167,7 +192,6 @@ public class MainActivity extends AppCompatActivity implements IEnrolledItemClic
             mFAB_AddCourse.startAnimation(cancelToCheck);
         //otvoren i odznačili smo sve
     }
-
     private void addToDatabase() {
         if (mShouldCoursesBeAdded) {
             for (String key : mCoursesToAdd.keySet()) {
@@ -177,65 +201,12 @@ public class MainActivity extends AppCompatActivity implements IEnrolledItemClic
         mCoursesToAdd.clear();
     }
 
-    private void onSignedInInitialize(String userID) {
-        mUserID = userID;
-        if (!isChooseCourseOpen && !isCourseOverviewOpen) setUpFragments();
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.main_menu, menu);
-        menu.findItem(R.id.search_icon).setVisible(false);
-        menu.findItem(R.id.deleteItem).setVisible(false);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.sign_out_menu:
-                onSignedOutCleanup();
-                AuthUI.getInstance().signOut(this);
-                startActivityForResult(
-                        AuthUI.getInstance()
-                                .createSignInIntentBuilder()
-                                .setIsSmartLockEnabled(false)
-                                .setAvailableProviders(Arrays.asList(
-                                        new AuthUI.IdpConfig.GoogleBuilder().build(),
-                                        new AuthUI.IdpConfig.EmailBuilder().build()))
-                                .setTheme(R.style.MyTheme)
-                                .build(),
-                        RC_SIGN_IN);
-                return true;
-            case R.id.user_icon:
-                Toast.makeText(this, "Signed in as " + mFirebaseUser.getDisplayName(), Toast.LENGTH_SHORT).show();
-                return true;
-            default:
-                return super.onOptionsItemSelected(item);
-
-        }
-    }
-
     private void onSignedOutCleanup() {
         mUserID = ANONYMOUS;
         mRepository.removeListeners();
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-        if (mAuthStateListener != null) {
-            mFirebaseAuth.removeAuthStateListener(mAuthStateListener);
-        }
-        //detachDatabaseReadListener();
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        mFirebaseAuth.addAuthStateListener(mAuthStateListener);
-
+        mRepository.destroyInstance();
+        if (mEnrolledCoursesFragment.isAdded())
+            mFragmentManager.beginTransaction().detach(mEnrolledCoursesFragment).commit();
     }
 
     private void setUpFragments() {
@@ -244,6 +215,20 @@ public class MainActivity extends AppCompatActivity implements IEnrolledItemClic
         FragmentTransaction fragmentTransaction = mFragmentManager.beginTransaction();
         fragmentTransaction.add(R.id.fragment, mEnrolledCoursesFragment).commit();
         mLoadingProgressbar.setVisibility(View.GONE);
+    }
+    @Override
+    protected void onPause() {
+        super.onPause();
+        if (mAuthStateListener != null) {
+            mFirebaseAuth.removeAuthStateListener(mAuthStateListener);
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        mFirebaseAuth.addAuthStateListener(mAuthStateListener);
+        mLoadingProgressbar.setVisibility(View.VISIBLE);
     }
 
     @Override
@@ -272,6 +257,7 @@ public class MainActivity extends AppCompatActivity implements IEnrolledItemClic
             mFAB_AddCourse.setAlpha((float) 1);
         } else if (isChooseCourseOpen) {
             isChooseCourseOpen = false;
+            mShouldCoursesBeAdded = false;
             myToolbar.setVisibility(View.VISIBLE);
             myToolbar.setBackgroundColor(Color.TRANSPARENT);
             Animation changeFrom = AnimationUtils.loadAnimation(this, R.anim.fab_check_to_add);

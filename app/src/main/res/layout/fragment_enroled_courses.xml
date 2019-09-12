@@ -1,30 +1,37 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+
+<android.support.v4.widget.SwipeRefreshLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:id="@+id/pullToRefresh">
 
-    tools:context=".Views.EnrolledCoursesFragment">
-
-
-    <ListView
-        android:id="@+id/coursesListView"
+    <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="5dp"
-        android:layout_marginTop="5dp"
-        android:layout_marginEnd="5dp"
-        android:layout_marginBottom="5dp"
-        android:divider="@null"
-        android:dividerHeight="8dp" />
+        android:layout_height="match_parent"
 
-    <TextView
-        android:id="@+id/tvNoEnrolledCourses"
-        android:layout_centerInParent="true"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/no_enrolled_courses"
-        android:visibility="visible" />
+        tools:context=".Views.EnrolledCoursesFragment">
 
 
-</RelativeLayout>
+        <ListView
+            android:id="@+id/coursesListView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="5dp"
+            android:layout_marginTop="5dp"
+            android:layout_marginEnd="5dp"
+            android:layout_marginBottom="5dp"
+            android:divider="@null"
+            android:dividerHeight="8dp" />
+
+        <TextView
+            android:id="@+id/tvNoEnrolledCourses"
+            android:layout_centerInParent="true"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/no_enrolled_courses"
+            android:visibility="visible" />
+    </RelativeLayout>
+
+</android.support.v4.widget.SwipeRefreshLayout>
+

@@ -48,18 +48,17 @@ public class CourseAdapter extends ArrayAdapter<EnrolledCourse> {
             courseNameTextView.setText(course.getName());
             int perc = countPercentage();
             int abs = countAbsence();
-            int total = perc + abs;
 
             if (perc < 70) {
                 progressBar.setProgress(perc);
                 progressBarAbsent.setProgress(perc + abs);
-                String percString = Integer.toString(countPercentage());
-                mPercentage.setText(percString + "%");
+                mPercentage.setText(perc + "%");
             } else {
                 progressBar.setVisibility(View.INVISIBLE);
                 progressBarAbsent.setVisibility(View.INVISIBLE);
                 mPercentage.setVisibility(View.INVISIBLE);
                 ivCourseDone.setVisibility(View.VISIBLE);
+                ivCourseDone.setAlpha(0.9f);
             }
 
         }

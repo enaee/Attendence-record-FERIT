@@ -40,7 +40,7 @@ public class CourseOverviewFragment extends Fragment {
     public CourseOverviewViewModel mViewModel;
     private ViewPager mViewPager;
     private TabLayout mTabLayout;
-    private TextView mCourseTitle, mPercentageLeft, mPercentagePresentSigned, mPercentageAbsent, mTvLeft;
+    private TextView mCourseTitle, mPercentageDone, mPercentageLeft, mPercentageAbsent, mTvLeft;
     private String mCourseID, mUserID;
     private ProgressBar mProgressBarPresentSigned, mProgressbarAbsent;
     private ImageView ivCoureDone;
@@ -128,8 +128,8 @@ public class CourseOverviewFragment extends Fragment {
         mCourseTitle = rootView.findViewById(R.id.tvCourseOverviewTitle);
         mProgressBarPresentSigned = rootView.findViewById(R.id.courseOverviewProgressbarPresenceSigned);
         mProgressbarAbsent = rootView.findViewById(R.id.courseOverviewProgressbarAbsent);
-        mPercentageLeft = rootView.findViewById(R.id.percentage_left);
-        mPercentagePresentSigned = rootView.findViewById(R.id.tvPercentagePresent);
+        mPercentageDone = rootView.findViewById(R.id.percentage_done);
+        mPercentageLeft = rootView.findViewById(R.id.tvPercentageLeft);
         mPercentageAbsent = rootView.findViewById(R.id.tvPercentageAbsent);
         mTvLeft = rootView.findViewById(R.id.tvLeft);
         ivCoureDone = rootView.findViewById(R.id.ivCourseDone);
@@ -138,21 +138,24 @@ public class CourseOverviewFragment extends Fragment {
     }
 
     private void setCourseData() {
+        mCourseTitle.setText(mViewModel.getCourse().getValue().getName());
 
         int perc = mViewModel.countPercentage(mEnrolledCourse);
         int abs = mViewModel.countAbsence(mEnrolledCourse);
         int total = perc + abs;
-        mCourseTitle.setText(mViewModel.getCourse().getValue().getName());
-        if (total >= 100) {
-            mPercentageLeft.setVisibility(View.GONE);
-            mTvLeft.setVisibility(View.GONE);
-            ObjectAnimator.ofFloat(ivCoureDone, "alpha", 0f, 1f).getStartDelay();
-            ivCoureDone.setVisibility(View.VISIBLE);
 
+
+        if (perc >= 70) {
+            mPercentageDone.setVisibility(View.GONE);
+            mTvLeft.setVisibility(View.GONE);
+            ObjectAnimator.ofFloat(ivCoureDone, "alpha", 0f, 0.9f).setDuration(300).start();
+            ivCoureDone.setVisibility(View.VISIBLE);
         } else {
-            mPercentageLeft.setText(total + "%");
+            mPercentageDone.setText(perc + "%");
         }
-        mPercentagePresentSigned.setText(perc + "%\nPrisutnost i upis");
+
+        if (total >= 100) total = 100;
+        mPercentageLeft.setText(100 - total + "%\nPreostalo");
         mPercentageAbsent.setText(abs + "%\nOdsutnost");
 
         if (abs >= 30) {
@@ -161,9 +164,10 @@ public class CourseOverviewFragment extends Fragment {
         if (abs >= 20) {
             mPercentageAbsent.setTextColor(Color.parseColor("#C77800"));
         } else {
-            mProgressBarPresentSigned.setProgress(perc);
-            mProgressbarAbsent.setProgress(perc + abs);
+            mPercentageAbsent.setTextColor(Color.GRAY);
         }
+        mProgressBarPresentSigned.setProgress(perc);
+        mProgressbarAbsent.setProgress(perc + abs);
     }
 
     private void setUpPager() {

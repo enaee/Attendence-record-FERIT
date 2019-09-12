@@ -43,6 +43,9 @@ public class FirebaseManager {
         return instance;
     }
 
+    public void destroyInstance() {
+        instance = null;
+    }
     private FirebaseManager(String userID) {
         enrolledCoursesReference = FirebaseDatabase.getInstance().getReference().child("enrolledCourses").child(userID);
         coursesReference = FirebaseDatabase.getInstance().getReference().child("Courses");
@@ -93,6 +96,7 @@ public class FirebaseManager {
             };
         }
         enrolledCoursesReference.addChildEventListener(mEnrolledCoursesListener);
+
         if (mCoursesListener == null) {
             mCoursesListener = new ValueEventListener() {
                 @Override
@@ -169,6 +173,5 @@ public class FirebaseManager {
 
     public void addUserToDatabase(User user) {
         usersReference.child(user.getUserID()).setValue(user);
-        //enrolledCoursesReference.setValue(false);
     }
 }

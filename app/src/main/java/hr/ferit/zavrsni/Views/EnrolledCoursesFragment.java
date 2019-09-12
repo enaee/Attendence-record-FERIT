@@ -7,6 +7,7 @@ import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -68,9 +69,29 @@ public class EnrolledCoursesFragment extends Fragment {
         if (getArguments().containsKey(USER_ID)) {
             mUserID = getArguments().getString(USER_ID);
         }
+        final SwipeRefreshLayout pullToRefresh = mRootView.findViewById(R.id.pullToRefresh);
+        pullToRefresh.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                refreshData(); // your code
+                pullToRefresh.setRefreshing(false);
+            }
+        });
+
         initializeUI();
         setLiveData();
         return mRootView;
+    }
+
+    private void refreshData() {
+        mCourses = mViewModel.getEnrolledCourses().getValue();
+        if (mCourses.size() == 0) {
+            mNoEnrolledCourses.setVisibility(View.VISIBLE);
+        } else {
+            mNoEnrolledCourses.setVisibility(View.GONE);
+            mCourseAdapter.clear();
+            mCourseAdapter.addAll(mCourses);
+        }
     }
 
     private void setLiveData() {
@@ -103,6 +124,7 @@ public class EnrolledCoursesFragment extends Fragment {
         mCourseListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+
                 mItemClickListener.onItemClicked(mCourses.get(position).getId(), mUserID, view);
             }
         });
@@ -131,16 +153,29 @@ public class EnrolledCoursesFragment extends Fragment {
         mCourseAdapter.clear();
     }
 
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        this.mItemClickListener = null;
+        mCourseAdapter.clear();
+    }
+
     @Override
     public void onPause() {
         super.onPause();
-
+        mCourseAdapter.clear();
     }
 
     @Override
     public void onResume() {
         super.onResume();
+        if (getContext() instanceof IEnrolledItemClickListener) {
+            this.mItemClickListener = (IEnrolledItemClickListener) getContext();
+        }
+
         mViewModel.setInterface();
+
     }
 }
 

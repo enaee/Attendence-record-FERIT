@@ -46,20 +46,20 @@ public class ChooseCourseViewModel extends ViewModel {
 
     public List<Course> getAllButEnrolled() {
         List<Course> list = new ArrayList<>();
-
+        Map<String, Course> map = new HashMap<>(allCoursesMap);
         if (enrolledCourses.size() == 0) {
             list.addAll(coursesList);
         } else {
             for (String key : allCoursesMap.keySet()) {
                 for (EnrolledCourse course : enrolledCourses) {
-                    if (!course.getId().equals(key)) {
-                        list.add(allCoursesMap.get(key));
+                    if (course.getId().equals(key)) {
+                        map.remove(key);
+                        break;
                     }
-                    break;
                 }
             }
+            list.addAll(map.values());
         }
-
         return list;
     }
 

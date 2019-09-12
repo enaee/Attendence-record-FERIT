@@ -1,15 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
-
     <item>
         <shape android:shape="oval">
             <gradient
                 android:type="radial"
                 android:gradientRadius="90%p"
-                android:endColor="@color/secondaryColor"
-                android:startColor="@color/secondaryDarkColor" />
-
+                android:endColor="@color/secondaryLightColor"
+                android:startColor="@color/secondaryColor" />
             <size
                 android:height="150dp"
                 android:width="150dp"></size>

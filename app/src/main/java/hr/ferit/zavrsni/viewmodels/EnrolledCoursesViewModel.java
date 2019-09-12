@@ -20,7 +20,6 @@ public class EnrolledCoursesViewModel extends ViewModel implements IEnrolledCour
 
     private MutableLiveData<List<EnrolledCourse>> mEnrolledCourses;
     private MutableLiveData<EnrolledCourse> mEnrolledCourse;
-    private MutableLiveData<Boolean> mIsUpdating = new MutableLiveData<>();
     private Map<String, EnrolledCourse> enrolledCourses;
     private List<EnrolledCourse> enrolledCoursesList;
     private FirebaseManager mRepository;
@@ -39,9 +38,6 @@ public class EnrolledCoursesViewModel extends ViewModel implements IEnrolledCour
         enrolledCoursesList = new ArrayList<>();
     }
 
-    public LiveData<Boolean> getIsUpdating() {
-        return mIsUpdating;
-    }
     public LiveData<List<EnrolledCourse>> getEnrolledCourses() {
         return mEnrolledCourses;
     }
@@ -53,7 +49,6 @@ public class EnrolledCoursesViewModel extends ViewModel implements IEnrolledCour
     @Override
     public void onChildAddedEnrolledCourse(DataSnapshot dataSnapshot) {
         if (dataSnapshot.hasChildren()) {
-            mIsUpdating.setValue(false);
             enrolledCourses.put(dataSnapshot.getKey(), dataSnapshot.getValue(EnrolledCourse.class));
         }
         enrolledCoursesList.clear();
