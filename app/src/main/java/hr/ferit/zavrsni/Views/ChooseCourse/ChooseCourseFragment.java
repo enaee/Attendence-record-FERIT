@@ -587,7 +587,6 @@ public class ChooseCourseFragment extends Fragment {
             super(itemView);
             root = itemView.findViewById(R.id.root);
             courseName = itemView.findViewById(R.id.tvCourseListTitle_Checkable);
-            courseName.setChecked(false);
         }
 
         public void setCourseName(Course course) {
