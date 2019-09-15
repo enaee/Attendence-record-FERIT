@@ -525,12 +525,10 @@ public class ChooseCourseFragment extends Fragment {
             if (mViewModel.getCoursesToEnroll().isEmpty()) {
                 setOnItemClickListener(holder, course);
             } else if (mViewModel.getCoursesToEnroll().containsKey(course.getId())) {
-                holder.courseName.setBackgroundColor(Color.parseColor("#4e7ca9"));
-                holder.courseName.setTextColor(Color.WHITE);
+                setHolderView(true, holder);
                 setOnItemClickListener(holder, course);
             } else if (!mViewModel.getCoursesToEnroll().containsKey(course.getId())) {
-                holder.courseName.setBackgroundColor(Color.TRANSPARENT);
-                holder.courseName.setTextColor(Color.BLACK);
+                setHolderView(false, holder);
                 setOnItemClickListener(holder, course);
             }
         }
@@ -540,14 +538,10 @@ public class ChooseCourseFragment extends Fragment {
                 @Override
                 public void onClick(View v) {
                     if (!mViewModel.getCoursesToEnroll().containsKey(course.getId())) {
-                        holder.courseName.setBackgroundColor(Color.parseColor("#4e7ca9"));
-                        holder.courseName.setTextColor(Color.WHITE);
-                        Toast.makeText(getContext(), "checked", Toast.LENGTH_SHORT).show();
+                        setHolderView(true, holder);
                         mViewModel.putCourseToEnroll(course);
                     } else if (mViewModel.getCoursesToEnroll().containsKey(course.getId())) {
-                        holder.courseName.setBackgroundColor(Color.TRANSPARENT);
-                        holder.courseName.setTextColor(Color.BLACK);
-                        Toast.makeText(getContext(), "UNchecked", Toast.LENGTH_SHORT).show();
+                        setHolderView(false, holder);
                         mViewModel.removeCoursesToEnroll(course);
                     }
                     if (!mViewModel.getCoursesToEnroll().isEmpty()) {
@@ -565,11 +559,24 @@ public class ChooseCourseFragment extends Fragment {
 
         }
 
+        private void setHolderView(boolean b, ViewHolder holder) {
+            if (b) {
+                holder.courseName.setBackgroundColor(Color.parseColor("#4e7ca9"));
+                holder.courseName.setTextColor(Color.WHITE);
+                Toast.makeText(getContext(), "checked", Toast.LENGTH_SHORT).show();
+            } else {
+                holder.courseName.setBackgroundColor(Color.TRANSPARENT);
+                holder.courseName.setTextColor(Color.BLACK);
+                Toast.makeText(getContext(), "UNchecked", Toast.LENGTH_SHORT).show();
+            }
+        }
+
         @Override
         public Filter getFilter() {
             return courseNameFilter;
         }
     }
+
 
     public class ViewHolder extends RecyclerView.ViewHolder {
 

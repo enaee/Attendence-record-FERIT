@@ -45,6 +45,7 @@ public class EnrolledCoursesFragment extends Fragment {
     private List<EnrolledCourse> mCourses;
 
     private EnrolledCoursesViewModel mViewModel;
+    private Observer<List<EnrolledCourse>> mObserver;
 
 
     public EnrolledCoursesFragment() {
@@ -73,7 +74,14 @@ public class EnrolledCoursesFragment extends Fragment {
         pullToRefresh.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                refreshData(); // your code
+                mCourses = mViewModel.getEnrolledCourses().getValue();
+                mCourseAdapter.clear();
+                mCourseAdapter.addAll(mCourses);
+                if (mCourses.size() == 0) {
+                    mNoEnrolledCourses.setVisibility(View.VISIBLE);
+                } else {
+                    mNoEnrolledCourses.setVisibility(View.GONE);
+                } // your code
                 pullToRefresh.setRefreshing(false);
             }
         });
@@ -83,16 +91,6 @@ public class EnrolledCoursesFragment extends Fragment {
         return mRootView;
     }
 
-    private void refreshData() {
-        mCourses = mViewModel.getEnrolledCourses().getValue();
-        if (mCourses.size() == 0) {
-            mNoEnrolledCourses.setVisibility(View.VISIBLE);
-        } else {
-            mNoEnrolledCourses.setVisibility(View.GONE);
-            mCourseAdapter.clear();
-            mCourseAdapter.addAll(mCourses);
-        }
-    }
 
     private void setLiveData() {
         mCourses = new ArrayList<>();
@@ -101,20 +99,22 @@ public class EnrolledCoursesFragment extends Fragment {
         mCourseListView.setAdapter(mCourseAdapter);
         mViewModel = ViewModelProviders.of(this).get(EnrolledCoursesViewModel.class);
         mViewModel.init(mUserID);
-        mViewModel.getEnrolledCourses().observe(this, new Observer<List<EnrolledCourse>>() {
-            @Override
-            public void onChanged(@Nullable List<EnrolledCourse> enrolledCourses) {
-                mCourses = mViewModel.getEnrolledCourses().getValue();
-                if (mCourses.size() == 0) {
-                    mNoEnrolledCourses.setVisibility(View.VISIBLE);
-                } else {
-                    mNoEnrolledCourses.setVisibility(View.GONE);
+        if (mObserver == null) {
+            mObserver = new Observer<List<EnrolledCourse>>() {
+                @Override
+                public void onChanged(@Nullable List<EnrolledCourse> enrolledCourses) {
+                    mCourses = mViewModel.getEnrolledCourses().getValue();
                     mCourseAdapter.clear();
                     mCourseAdapter.addAll(mCourses);
+                    if (mCourses.size() == 0) {
+                        mNoEnrolledCourses.setVisibility(View.VISIBLE);
+                    } else {
+                        mNoEnrolledCourses.setVisibility(View.GONE);
+                    }
                 }
-
-            }
-        });
+            };
+        }
+        mViewModel.getEnrolledCourses().observe(this, mObserver);
 
     }
 
@@ -151,8 +151,8 @@ public class EnrolledCoursesFragment extends Fragment {
         super.onDetach();
         this.mItemClickListener = null;
         mCourseAdapter.clear();
-    }
 
+    }
 
     @Override
     public void onStop() {
@@ -165,16 +165,17 @@ public class EnrolledCoursesFragment extends Fragment {
     public void onPause() {
         super.onPause();
         mCourseAdapter.clear();
+        mViewModel.removeListeners();
     }
 
     @Override
     public void onResume() {
         super.onResume();
+        mViewModel.addListener();
+        mViewModel.setInterface();
         if (getContext() instanceof IEnrolledItemClickListener) {
             this.mItemClickListener = (IEnrolledItemClickListener) getContext();
         }
-
-        mViewModel.setInterface();
 
     }
 }

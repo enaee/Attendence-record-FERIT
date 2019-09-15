@@ -139,16 +139,16 @@ public class CourseOverviewFragment extends Fragment {
 
     private void setCourseData() {
         mCourseTitle.setText(mViewModel.getCourse().getValue().getName());
-
         int perc = mViewModel.countPercentage(mEnrolledCourse);
         int abs = mViewModel.countAbsence(mEnrolledCourse);
         int total = perc + abs;
-
-
+        mProgressBarPresentSigned.setProgress(perc);
+        mProgressbarAbsent.setProgress(perc + abs);
         if (perc >= 70) {
-            mPercentageDone.setVisibility(View.GONE);
-            mTvLeft.setVisibility(View.GONE);
-            ObjectAnimator.ofFloat(ivCoureDone, "alpha", 0f, 0.9f).setDuration(300).start();
+            mPercentageDone.setVisibility(View.INVISIBLE);
+            mTvLeft.setVisibility(View.INVISIBLE);
+            if (ivCoureDone.getVisibility() == View.INVISIBLE)
+                ObjectAnimator.ofFloat(ivCoureDone, "alpha", 0f, 0.9f).setDuration(400).start();
             ivCoureDone.setVisibility(View.VISIBLE);
         } else {
             mPercentageDone.setText(perc + "%");
@@ -159,15 +159,13 @@ public class CourseOverviewFragment extends Fragment {
         mPercentageAbsent.setText(abs + "%\nOdsutnost");
 
         if (abs >= 30) {
-            mPercentageAbsent.setTextColor(Color.parseColor("#B00020"));
-        }
-        if (abs >= 20) {
+            mPercentageAbsent.setTextColor(Color.RED);
+        } else if (abs >= 20) {
             mPercentageAbsent.setTextColor(Color.parseColor("#C77800"));
         } else {
             mPercentageAbsent.setTextColor(Color.GRAY);
         }
-        mProgressBarPresentSigned.setProgress(perc);
-        mProgressbarAbsent.setProgress(perc + abs);
+
     }
 
     private void setUpPager() {
@@ -175,7 +173,6 @@ public class CourseOverviewFragment extends Fragment {
         mViewPager.setAdapter(pagerAdapter);
         setUpTabLayout();
     }
-
     private void setUpTabLayout() {
         mTabLayout.setupWithViewPager(mViewPager);
         for (int i = 0; i < mTabLayout.getTabCount(); i++) {

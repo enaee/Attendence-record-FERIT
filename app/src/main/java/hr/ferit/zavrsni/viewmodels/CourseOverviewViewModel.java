@@ -6,11 +6,12 @@ import android.arch.lifecycle.ViewModel;
 
 import com.google.firebase.database.DataSnapshot;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import hr.ferit.zavrsni.Models.EnrolledCourse;
 import hr.ferit.zavrsni.interfaces.IEnrolledCoursesCallback;
-import hr.ferit.zavrsni.repository.FirebaseManager;
+import hr.ferit.zavrsni.Database.FirebaseManager;
 
 
 public class CourseOverviewViewModel extends ViewModel implements IEnrolledCoursesCallback {
@@ -33,7 +34,7 @@ public class CourseOverviewViewModel extends ViewModel implements IEnrolledCours
         mRepository = FirebaseManager.getInstance(mUserID);
         mRepository.setInterface(CourseOverviewViewModel.this);
         mRepository.addListeners();
-        Map<String, EnrolledCourse> enrolledCourses = mRepository.getEnrolledCourses();
+        Map<String, EnrolledCourse> enrolledCourses = new HashMap<>(mRepository.getEnrolledCourses());
         enrolledCourse.setValue(mRepository.getEnrolledCourse(mCourseID));
     }
 

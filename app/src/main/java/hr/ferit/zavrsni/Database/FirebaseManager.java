@@ -1,4 +1,4 @@
-package hr.ferit.zavrsni.repository;
+package hr.ferit.zavrsni.Database;
 
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -59,9 +59,6 @@ public class FirebaseManager {
         this.mECCallBack = callback;
     }
 
-    public void setUserInterface(INewUserListener listener) {
-        this.userListener = listener;
-    }
 
     public void addListeners() {
         if (mEnrolledCoursesListener == null) {
@@ -116,33 +113,13 @@ public class FirebaseManager {
         }
     }
 
-    public void addUserListener() {
-        if (mUserListener == null) {
-            mUserListener = new ValueEventListener() {
-                @Override
-                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                    for (DataSnapshot child : dataSnapshot.getChildren()) {
-                        User user = child.getValue(User.class);
-                        userMap.put(user.getUserID(), user);
-                    }
-                    userListener.onUsersInitialize();
-                }
 
-                @Override
-                public void onCancelled(@NonNull DatabaseError databaseError) {
-
-                }
-            };
-        }
-        usersReference.addListenerForSingleValueEvent(mUserListener);
-    }
 
 
     public void removeListeners() {
         if (mEnrolledCoursesListener != null)
             enrolledCoursesReference.removeEventListener(mEnrolledCoursesListener);
         if (mCoursesListener != null) coursesReference.removeEventListener(mCoursesListener);
-        if (mUserListener != null) usersReference.removeEventListener(mUserListener);
     }
 
     public Map<String, Course> getAllCourses() {
@@ -165,13 +142,5 @@ public class FirebaseManager {
         enrolledCoursesReference.child(courseID).removeValue();
     }
 
-    public boolean checkIfNewUSer(String mUserID) {
-        boolean state = true;
-        if (userMap.containsKey(mUserID)) state = false;
-        return state;
-    }
 
-    public void addUserToDatabase(User user) {
-        usersReference.child(user.getUserID()).setValue(user);
-    }
 }

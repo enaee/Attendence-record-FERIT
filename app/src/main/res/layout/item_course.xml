@@ -23,10 +23,10 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_centerVertical="true"
+            android:layout_toEndOf="@+id/progressbarBackground"
             android:layout_toStartOf="@id/arrow"
-            android:layout_toEndOf="@id/courseOverviewProgressbarPresenceSigned"
             android:gravity="center_vertical"
-            android:paddingLeft="32dp"
+            android:paddingLeft="16dp"
             android:paddingTop="16dp"
             android:paddingRight="16dp"
             android:paddingBottom="16dp"
@@ -43,7 +43,7 @@
             android:layout_alignParentStart="true"
             android:layout_centerVertical="true"
             android:layout_gravity="start"
-            android:layout_marginStart="0dp"
+            android:layout_marginStart="1dp"
             android:layout_marginTop="16dp"
             android:layout_marginBottom="16dp"
             android:max="100"
@@ -64,6 +64,7 @@
             android:layout_marginStart="0dp"
             android:layout_marginTop="16dp"
             android:layout_marginBottom="16dp"
+            android:alpha="0.6"
             android:max="100"
             android:paddingLeft="16dp"
             android:paddingRight="16dp"
@@ -79,7 +80,6 @@
             android:layout_alignParentStart="true"
             android:layout_centerVertical="true"
             android:layout_gravity="start"
-            android:layout_marginStart="0dp"
             android:layout_marginTop="16dp"
             android:layout_marginBottom="16dp"
             android:max="100"
@@ -102,6 +102,15 @@
             android:visibility="gone"
             android:src="@drawable/course_done" />
 
+        <ImageView
+            android:id="@+id/courseWarning"
+            android:layout_width="24dp"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_marginStart="68dp"
+            android:alpha="0.5"
+            android:src="@drawable/ic_priority_high_black_24dp"
+            android:visibility="invisible" />
 
         <TextView
             android:id="@+id/percentage"
@@ -116,13 +125,6 @@
             android:gravity="center"
             android:text="text" />
 
-        <TextView
-            android:id="@+id/extraContent"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_below="@+id/courseOverviewProgressbarPresenceSigned"
-            android:text="DODATNI SKRIVENI SADRŽAJ"
-            android:visibility="gone" />
 
         <ImageView
             android:id="@+id/arrow"

@@ -114,9 +114,8 @@
             android:layout_below="@id/tvCourseOverviewTitle"
             android:layout_marginTop="80dp"
             android:layout_toStartOf="@id/progressbarBackground"
-            android:gravity="center|fill"
-            android:text="TextView"
-            android:textAllCaps="true" />
+            android:gravity="center"
+            android:text="TextView" />
 
 
         <TextView

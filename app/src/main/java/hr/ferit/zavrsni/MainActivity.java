@@ -30,27 +30,25 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
+import hr.ferit.zavrsni.Database.FirebaseManager;
+import hr.ferit.zavrsni.Database.FirebaseUserManager;
 import hr.ferit.zavrsni.Models.User;
 import hr.ferit.zavrsni.Views.ChooseCourse.ChooseCourseFragment;
 import hr.ferit.zavrsni.Views.CourseOverview.CourseOverviewFragment;
 import hr.ferit.zavrsni.Views.EnrolledCoursesFragment;
 import hr.ferit.zavrsni.interfaces.IEnrolledItemClickListener;
 import hr.ferit.zavrsni.interfaces.INewUserListener;
-import hr.ferit.zavrsni.repository.FirebaseManager;
 
 public class MainActivity extends AppCompatActivity implements IEnrolledItemClickListener, ChooseCourseFragment.addCoursesListener, INewUserListener {
 
     public static final int RC_SIGN_IN = 1; //RC is request code
     public static final String ANONYMOUS = "anonymous";
-    public static boolean has_enrolled_courses = false;
+    public static FloatingActionButton mFAB_AddCourse;
     private boolean isChooseCourseOpen = false;
     private boolean isCourseOverviewOpen = false;
-
     private boolean mShouldCoursesBeAdded;
     private Map<String, Object> mCoursesToAdd = new HashMap<>();
-
     private String mUserID;
-    public static FloatingActionButton mFAB_AddCourse;
     private Toolbar myToolbar;
     private ProgressBar mLoadingProgressbar;
 
@@ -58,7 +56,7 @@ public class MainActivity extends AppCompatActivity implements IEnrolledItemClic
     private FirebaseAuth mFirebaseAuth;
     private FirebaseAuth.AuthStateListener mAuthStateListener;
     private FirebaseUser mFirebaseUser;
-    private FirebaseManager mRepository;
+    private FirebaseUserManager mUserRepository;
 
 
     //Fragments
@@ -74,7 +72,6 @@ public class MainActivity extends AppCompatActivity implements IEnrolledItemClic
         menu.findItem(R.id.deleteItem).setVisible(false);
         return true;
     }
-
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
@@ -98,19 +95,16 @@ public class MainActivity extends AppCompatActivity implements IEnrolledItemClic
         mUserID = ANONYMOUS;
         initializeFirebaseAuth();
         initializeUI();
-
     }
-
     private void initializeFirebaseAuth() {
         mFirebaseAuth = FirebaseAuth.getInstance();
         mAuthStateListener = new FirebaseAuth.AuthStateListener() {
             @Override
             public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
                 mFirebaseUser = mFirebaseAuth.getCurrentUser();
-
                 if (mFirebaseUser != null) {
                     mUserID = mFirebaseUser.getUid();
-                    setRepository();
+                    setUserRepository();
                 } else {
                     onSignedOutCleanup();
                     startActivityForResult(
@@ -128,21 +122,45 @@ public class MainActivity extends AppCompatActivity implements IEnrolledItemClic
         };
     }
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == RC_SIGN_IN) {
+            if (resultCode == RESULT_OK) {
+                mFirebaseUser = mFirebaseAuth.getCurrentUser();
+                if (mFirebaseUser != null) {
+                    mUserID = mFirebaseUser.getUid();
+                    setUserRepository();
+                }
+                Toast.makeText(this, "Signed In!", Toast.LENGTH_SHORT).show();
+            } else if (resultCode == RESULT_CANCELED) {
+                Toast.makeText(this, "Sign In Canceled", Toast.LENGTH_SHORT).show();
+                finish();
+            }
+        }
+    }
+
     private void onSignedInInitialize(String userID) {
         mUserID = userID;
         if (!isChooseCourseOpen && !isCourseOverviewOpen) setUpFragments();
     }
 
-
-
-    public void setRepository() {
-        mRepository = FirebaseManager.getInstance(mUserID);
-        mRepository.setUserInterface(this);
-        mRepository.addUserListener();
-        if (!mUserID.equals(ANONYMOUS)) onUsersInitialize();
+    private void setUpFragments() {
+        mChooseCoursesFragment = ChooseCourseFragment.newInstance(mUserID);
+        mEnrolledCoursesFragment = EnrolledCoursesFragment.newInstance(mUserID);
+        FragmentTransaction fragmentTransaction = mFragmentManager.beginTransaction();
+        fragmentTransaction.add(R.id.fragment, mEnrolledCoursesFragment).commit();
+        mLoadingProgressbar.setVisibility(View.GONE);
     }
+
+    public void setUserRepository() {
+        mUserRepository = FirebaseUserManager.getInstance();
+        mUserRepository.setUserInterface(this);
+        mUserRepository.addUserListener();
+        //if (!mUserID.equals(ANONYMOUS)) onUsersInitialize();
+    }
+
     private void initializeUI() {
-        //Initialize reference to views
         myToolbar = findViewById(R.id.my_toolbar);
         myToolbar.setTitle("");
         setSupportActionBar(myToolbar);
@@ -156,24 +174,27 @@ public class MainActivity extends AppCompatActivity implements IEnrolledItemClic
             }
         });
     }
+
     private void replaceFragments() {
-        FragmentTransaction fragmentTransaction = mFragmentManager.beginTransaction();
+        FragmentTransaction fragmentTransaction = mFragmentManager.beginTransaction().setCustomAnimations(R.anim.fade_in, R.anim.fade_out, R.anim.fade_in, R.anim.fade_out);
         if (!isChooseCourseOpen) {
             isChooseCourseOpen = true;
             myToolbar.setBackgroundColor(Color.WHITE);
             fragmentTransaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE).replace(R.id.fragment, mChooseCoursesFragment).addToBackStack(null).commit();
             animateFAB();
-
         } else {
             isChooseCourseOpen = false;
             myToolbar.setVisibility(View.VISIBLE);
             myToolbar.setBackgroundColor(Color.TRANSPARENT);
             if (mShouldCoursesBeAdded) addToDatabase();
             mFragmentManager.popBackStack();
-            fragmentTransaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE).replace(R.id.fragment, mEnrolledCoursesFragment).commit();
+
+
+            fragmentTransaction.replace(R.id.fragment, mEnrolledCoursesFragment).commit();
             animateFAB();
         }
     }
+
     private void animateFAB() {
         Animation addToCancel = AnimationUtils.loadAnimation(this, R.anim.fab_add_to_cancel);
         Animation cancelToAdd = AnimationUtils.loadAnimation(this, R.anim.fab_cancel_to_add);
@@ -192,6 +213,7 @@ public class MainActivity extends AppCompatActivity implements IEnrolledItemClic
             mFAB_AddCourse.startAnimation(cancelToCheck);
         //otvoren i odznačili smo sve
     }
+
     private void addToDatabase() {
         if (mShouldCoursesBeAdded) {
             for (String key : mCoursesToAdd.keySet()) {
@@ -203,19 +225,16 @@ public class MainActivity extends AppCompatActivity implements IEnrolledItemClic
 
     private void onSignedOutCleanup() {
         mUserID = ANONYMOUS;
-        mRepository.removeListeners();
-        mRepository.destroyInstance();
-        if (mEnrolledCoursesFragment.isAdded())
-            mFragmentManager.beginTransaction().detach(mEnrolledCoursesFragment).commit();
+        if (mUserRepository != null) mUserRepository.removeUserListeners();
+        if (mEnrolledCoursesFragment != null) {
+            if (mEnrolledCoursesFragment.isAdded())
+                mFragmentManager.beginTransaction().remove(mEnrolledCoursesFragment).commit();
+        }
+        FirebaseManager.getInstance(mUserID).destroyInstance();
+
     }
 
-    private void setUpFragments() {
-        mChooseCoursesFragment = ChooseCourseFragment.newInstance(mUserID);
-        mEnrolledCoursesFragment = EnrolledCoursesFragment.newInstance(mUserID);
-        FragmentTransaction fragmentTransaction = mFragmentManager.beginTransaction();
-        fragmentTransaction.add(R.id.fragment, mEnrolledCoursesFragment).commit();
-        mLoadingProgressbar.setVisibility(View.GONE);
-    }
+
     @Override
     protected void onPause() {
         super.onPause();
@@ -228,26 +247,15 @@ public class MainActivity extends AppCompatActivity implements IEnrolledItemClic
     protected void onResume() {
         super.onResume();
         mFirebaseAuth.addAuthStateListener(mAuthStateListener);
-        mLoadingProgressbar.setVisibility(View.VISIBLE);
+
     }
 
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == RC_SIGN_IN) {
-            if (resultCode == RESULT_OK) {
-                Toast.makeText(this, "Signed In!", Toast.LENGTH_SHORT).show();
-            } else if (resultCode == RESULT_CANCELED) {
-                Toast.makeText(this, "Sign In Canceled", Toast.LENGTH_SHORT).show();
-                finish();
-            }
-        }
-    }
 
     @Override
     public void onBackPressed() {
         super.onBackPressed();
         checkWhatFragmentIsOpen();
+        mLoadingProgressbar.setVisibility(View.GONE);
     }
 
     private void checkWhatFragmentIsOpen() {
@@ -255,6 +263,7 @@ public class MainActivity extends AppCompatActivity implements IEnrolledItemClic
             isCourseOverviewOpen = false;
             myToolbar.setBackgroundColor(Color.TRANSPARENT);
             mFAB_AddCourse.setAlpha((float) 1);
+
         } else if (isChooseCourseOpen) {
             isChooseCourseOpen = false;
             mShouldCoursesBeAdded = false;
@@ -289,11 +298,12 @@ public class MainActivity extends AppCompatActivity implements IEnrolledItemClic
 
     @Override
     public void onUsersInitialize() {
-        if (!mRepository.checkIfNewUSer(mUserID)) {
+        if (!mUserRepository.checkIfNewUSer(mUserID)) {
             onSignedInInitialize(mUserID);
         } else {
             User user = new User(mUserID, mFirebaseUser.getDisplayName());
-            mRepository.addUserToDatabase(user);
+            mUserRepository.addUserToDatabase(user);
+            onSignedInInitialize(mUserID);
         }
 
     }

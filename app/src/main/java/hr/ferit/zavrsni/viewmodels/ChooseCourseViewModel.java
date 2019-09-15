@@ -9,7 +9,7 @@ import java.util.Map;
 
 import hr.ferit.zavrsni.Models.Course;
 import hr.ferit.zavrsni.Models.EnrolledCourse;
-import hr.ferit.zavrsni.repository.FirebaseManager;
+import hr.ferit.zavrsni.Database.FirebaseManager;
 
 public class ChooseCourseViewModel extends ViewModel {
 

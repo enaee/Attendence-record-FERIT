@@ -70,8 +70,6 @@ public class CourseDetailsOverviewFragment extends Fragment {
             mEnrolledCourse = (EnrolledCourse) getArguments().getSerializable(ENROLLED_COURSE);
         }
         initialize();
-
-
         return mRootView;
     }
 
@@ -96,7 +94,6 @@ public class CourseDetailsOverviewFragment extends Fragment {
             setUpCourseData();
         }
     }
-
 
     private void setUpCourseData() {
         switch (mCourseType) {
@@ -145,7 +142,6 @@ public class CourseDetailsOverviewFragment extends Fragment {
         mTotalSigned.setText(Float.toString(mCourseTypeAttendance.get(SIGNED)));
     }
 
-
     private void setClickListeners() {
         mLayoutPresent.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -185,7 +181,7 @@ public class CourseDetailsOverviewFragment extends Fragment {
 
     private boolean checkIfCanAdd() {
         float totalInput = mCourseTypeAttendance.get(PRESENT) + mCourseTypeAttendance.get(ABSENT) + mCourseTypeAttendance.get(SIGNED);
-        if (totalInput <= mCourseTypeAttendance.get(TOTAL)) {
+        if (totalInput < mCourseTypeAttendance.get(TOTAL)) {
             return true;
         } else {
             return false;

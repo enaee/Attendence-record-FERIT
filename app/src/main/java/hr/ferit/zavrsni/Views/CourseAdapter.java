@@ -25,7 +25,7 @@ public class CourseAdapter extends ArrayAdapter<EnrolledCourse> {
     private ProgressBar progressBar, progressBarAbsent;
     private EnrolledCourse course;
     private TextView courseNameTextView, mPercentage;
-    private ImageView ivCourseDone;
+    private ImageView ivCourseDone, ivCourseWarning;
 
 
     public CourseAdapter(Context context, int resource, List<EnrolledCourse> objects) {
@@ -37,35 +37,56 @@ public class CourseAdapter extends ArrayAdapter<EnrolledCourse> {
         if (convertView == null) {
             convertView = ((Activity) getContext()).getLayoutInflater().inflate(R.layout.item_course, parent, false);
         }
-        courseNameTextView = convertView.findViewById(R.id.tvCourseListTitle);
-        mPercentage = convertView.findViewById(R.id.percentage);
-        progressBar = convertView.findViewById(R.id.courseOverviewProgressbarPresenceSigned);
-        progressBarAbsent = convertView.findViewById(R.id.courseOverviewProgressbarAbsent);
-        ivCourseDone = convertView.findViewById(R.id.courseDone);
+        initializeUI(convertView);
         course = getItem(position);
 
         if (course != null) {
             courseNameTextView.setText(course.getName());
+
             int perc = countPercentage();
             int abs = countAbsence();
-
-            if (perc < 70) {
-                progressBar.setProgress(perc);
-                progressBarAbsent.setProgress(perc + abs);
-                mPercentage.setText(perc + "%");
-            } else {
+            ivCourseWarning.setVisibility(View.INVISIBLE);
+            ivCourseDone.setVisibility(View.INVISIBLE);
+            mPercentage.setVisibility(View.VISIBLE);
+            progressBar.setVisibility(View.VISIBLE);
+            progressBar.setProgress(perc);
+            progressBarAbsent.setProgress(perc + abs);
+            mPercentage.setText(perc + "%");
+            if (perc >= 70) {
                 progressBar.setVisibility(View.INVISIBLE);
                 progressBarAbsent.setVisibility(View.INVISIBLE);
                 mPercentage.setVisibility(View.INVISIBLE);
                 ivCourseDone.setVisibility(View.VISIBLE);
-                ivCourseDone.setAlpha(0.9f);
+                ivCourseWarning.setVisibility(View.GONE);
+            } else if (abs >= 30) {
+                ivCourseWarning.setVisibility(View.VISIBLE);
+                progressBar.setProgress(perc);
+                progressBarAbsent.setProgress(perc + abs);
+                mPercentage.setText(perc + "%");
+            } else if (abs >= 20) {
+                ivCourseWarning.setVisibility(View.VISIBLE);
+                progressBar.setProgress(perc);
+                progressBarAbsent.setProgress(perc + abs);
+                mPercentage.setText(perc + "%");
+            } else {
+                ivCourseWarning.setVisibility(View.INVISIBLE);
+                progressBar.setProgress(perc);
+                progressBarAbsent.setProgress(perc + abs);
+                mPercentage.setText(perc + "%");
             }
-
         }
 
         return convertView;
     }
 
+    private void initializeUI(View convertView) {
+        courseNameTextView = convertView.findViewById(R.id.tvCourseListTitle);
+        mPercentage = convertView.findViewById(R.id.percentage);
+        progressBar = convertView.findViewById(R.id.courseOverviewProgressbarPresenceSigned);
+        progressBarAbsent = convertView.findViewById(R.id.courseOverviewProgressbarAbsent);
+        ivCourseDone = convertView.findViewById(R.id.courseDone);
+        ivCourseWarning = convertView.findViewById(R.id.courseWarning);
+    }
 
     private int countPercentage() {
         Map<String, Float> p = course.getP();
@@ -75,7 +96,6 @@ public class CourseAdapter extends ArrayAdapter<EnrolledCourse> {
         float total = p.get(TOTAL) + a.get(TOTAL) + l.get(TOTAL) + k.get(TOTAL);
         float present = p.get(PRESENT) + a.get(PRESENT) + l.get(PRESENT) + k.get(PRESENT);
         float signed = p.get(SIGNED) + a.get(SIGNED) + l.get(SIGNED) + k.get(SIGNED);
-        //float absent = p.get(ABSENT) + a.get(ABSENT) + l.get(ABSENT) + k.get(ABSENT);
         float presentAndSigned = present + signed;
         float percentage = (presentAndSigned / total) * 100;
         return (int) percentage;

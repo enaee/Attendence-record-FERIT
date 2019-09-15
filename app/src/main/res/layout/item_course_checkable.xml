@@ -5,6 +5,7 @@
     android:layout_height="wrap_content"
     android:layout_marginLeft="16dp"
     android:layout_marginRight="16dp"
+    android:layout_marginTop="16dp"
     android:foreground="?android:attr/selectableItemBackground"
     android:orientation="vertical">
 
@@ -12,12 +13,10 @@
         android:id="@+id/tvCourseListTitle_Checkable"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginEnd="16dp"
+        android:padding="16dp"
         android:checkMark="@drawable/outline_done_24"
         android:checkMarkTint="@color/background"
         android:gravity="center_vertical"
-        android:padding="16dp"
         android:textSize="14sp"
         android:textStyle="bold" />
 

@@ -11,17 +11,17 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import hr.ferit.zavrsni.Database.FirebaseManager;
 import hr.ferit.zavrsni.Models.EnrolledCourse;
 import hr.ferit.zavrsni.interfaces.IEnrolledCoursesCallback;
-import hr.ferit.zavrsni.repository.FirebaseManager;
 
 public class EnrolledCoursesViewModel extends ViewModel implements IEnrolledCoursesCallback {
 
 
     private MutableLiveData<List<EnrolledCourse>> mEnrolledCourses;
-    private MutableLiveData<EnrolledCourse> mEnrolledCourse;
     private Map<String, EnrolledCourse> enrolledCourses;
-    private List<EnrolledCourse> enrolledCoursesList;
+    private List<EnrolledCourse> enrolledCoursesList = new ArrayList<>();
+    ;
     private FirebaseManager mRepository;
 
     public void init(String userID) {
@@ -29,22 +29,16 @@ public class EnrolledCoursesViewModel extends ViewModel implements IEnrolledCour
             return;
         }
         mEnrolledCourses = new MutableLiveData<>();
-        mEnrolledCourse = new MutableLiveData<>();
         mRepository = FirebaseManager.getInstance(userID);
         mRepository.setInterface(this);
         mRepository.addListeners();
-        enrolledCourses = new HashMap<>();
-        enrolledCourses = mRepository.getEnrolledCourses();
-        enrolledCoursesList = new ArrayList<>();
+        enrolledCourses = new HashMap<>(mRepository.getEnrolledCourses());
     }
 
     public LiveData<List<EnrolledCourse>> getEnrolledCourses() {
         return mEnrolledCourses;
     }
 
-    public LiveData<EnrolledCourse> getEnrolledCourse(String courseID) {
-        return mEnrolledCourse;
-    }
 
     @Override
     public void onChildAddedEnrolledCourse(DataSnapshot dataSnapshot) {
@@ -76,5 +70,17 @@ public class EnrolledCoursesViewModel extends ViewModel implements IEnrolledCour
 
     public void setInterface() {
         mRepository.setInterface(this);
+    }
+
+    public void removeListeners() {
+        mRepository.removeListeners();
+    }
+
+    public void addListener() {
+        mRepository.addListeners();
+    }
+
+    public void deleteInstance() {
+        mRepository.destroyInstance();
     }
 }
