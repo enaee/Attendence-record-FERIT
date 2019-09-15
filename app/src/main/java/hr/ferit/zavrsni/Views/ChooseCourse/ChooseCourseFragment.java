@@ -381,7 +381,7 @@ public class ChooseCourseFragment extends Fragment {
         List<Course> degreeList = new ArrayList<>();
         List<Course> electiveList = new ArrayList<>();
         List<Course> electiveGradList = new ArrayList<>();
-        for (Course course : allCourses) {
+        for (Course course : mViewModel.getAllButEnrolled()) {
             if (course.getId().startsWith(DEGREE_LEVEL)) {
                 degreeList.add(course);
             }
