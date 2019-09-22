@@ -2,7 +2,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/layoutSearchCourse"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
+    android:layout_height="match_parent"
     android:background="@color/primaryLightColor"
     android:orientation="vertical">
 
@@ -14,31 +14,28 @@
         android:layout_marginStart="32dp"
         android:layout_marginEnd="32dp"
         android:layout_marginBottom="16dp"
+        android:gravity="center"
         android:orientation="horizontal">
 
         <Button
             android:id="@+id/undergraduate"
             style="@style/AppTheme.Button"
-            android:layout_width="1dp"
-            android:layout_height="wrap_content"
             android:contentDescription="Preddiplomski"
-
+            android:textSize="24sp"
             android:text="P" />
 
         <Button
             android:id="@+id/graduate"
             style="@style/AppTheme.Button"
-            android:layout_width="1dp"
-            android:layout_height="wrap_content"
+            android:textSize="24sp"
             android:layout_marginStart="16dp"
-            android:layout_marginEnd="16dp"
             android:text="D" />
 
         <Button
             android:id="@+id/professional"
             style="@style/AppTheme.Button"
-            android:layout_width="1dp"
-            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:textSize="24sp"
             android:text="S" />
 
     </LinearLayout>
@@ -52,60 +49,37 @@
         android:layout_marginStart="32dp"
         android:layout_marginEnd="32dp"
         android:orientation="horizontal"
+        android:gravity="center"
         android:visibility="gone">
 
         <Button
+            style="@style/AppTheme.Button"
             android:id="@+id/electivePowerEngineering"
-            android:layout_width="1dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:background="@drawable/border_selector"
-            android:gravity="bottom|center_horizontal"
-            android:padding="16dp"
             android:text="E" />
 
         <Button
             android:id="@+id/electiveCommunicationsAndInformatics"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
-            android:layout_weight="1"
-            android:background="@drawable/border_selector"
-            android:gravity="bottom|center_horizontal"
-            android:padding="16dp"
+            style="@style/AppTheme.Button"
             android:text="K" />
 
         <Button
             android:id="@+id/electiveComputerEngineering"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
-            android:layout_weight="1"
-            android:background="@drawable/border_selector"
-            android:gravity="bottom|center_horizontal"
-            android:padding="16dp"
+            style="@style/AppTheme.Button"
             android:text="R" />
 
         <Button
             android:id="@+id/electiveAutomotive"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
-            android:layout_weight="1"
-            android:background="@drawable/border_selector"
-            android:gravity="bottom|center_horizontal"
-            android:padding="16dp"
+            style="@style/AppTheme.Button"
+
             android:text="A" />
 
         <Button
             android:id="@+id/electiveInformatics"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
-            android:layout_weight="1"
-            android:background="@drawable/border_selector"
-            android:gravity="bottom|center_horizontal"
-            android:padding="16dp"
+            style="@style/AppTheme.Button"
             android:text="I" />
     </LinearLayout>
 
@@ -122,57 +96,117 @@
 
         <Button
             android:id="@+id/btnA"
-            android:layout_width="1dp"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="8dp"
-            android:layout_weight="1"
-            android:background="@drawable/border_ring_selector"
-            android:gravity="center"
-            android:padding="16dp"
+            style="@style/AppTheme.Button"
             android:text="a"
-
-            />
+            android:textAllCaps="false" />
 
         <Button
             android:id="@+id/btnB"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:layout_marginEnd="8dp"
-            android:layout_weight="1"
-            android:background="@drawable/border_ring_selector"
-            android:gravity="bottom|center_horizontal"
-            android:maxWidth="48dip"
-            android:padding="16dp"
+            android:layout_marginStart="16dp"
+            style="@style/AppTheme.Button"
+            android:textAllCaps="false"
             android:text="b" />
 
         <Button
             android:id="@+id/btnC"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:layout_marginEnd="8dp"
-            android:layout_weight="1"
-            android:background="@drawable/border_ring_selector"
-            android:gravity="bottom|center_horizontal"
-            android:maxWidth="48dip"
-            android:padding="16dp"
+            android:layout_marginStart="16dp"
+            style="@style/AppTheme.Button"
+            android:textAllCaps="false"
             android:text="c" />
 
         <Button
             android:id="@+id/btnD"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:layout_weight="1"
-            android:background="@drawable/border_ring_selector"
-            android:gravity="bottom|center_horizontal"
-            android:maxWidth="48dip"
-            android:padding="16dp"
+            android:layout_marginStart="16dp"
+            style="@style/AppTheme.Button"
+            android:textAllCaps="false"
             android:text="d" />
 
-
     </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/layoutSemester14"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:visibility="gone">
+
+        <TextView
+            android:id="@+id/tvSemester"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:layout_marginBottom="12dp"
+            android:text="@string/semestar" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginBottom="16dp"
+            android:layout_marginStart="32dp"
+            android:layout_marginEnd="32dp"
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:visibility="visible">
+
+            <Button
+                style="@style/AppTheme.Button"
+                android:id="@+id/btnSem1"
+                android:text="1" />
+
+            <Button
+                android:id="@+id/btnSem2"
+                android:layout_marginStart="16dp"
+                style="@style/AppTheme.Button"
+                android:text="2" />
+
+            <Button
+                android:id="@+id/btnSem3"
+                android:layout_marginStart="16dp"
+                style="@style/AppTheme.Button"
+                android:text="3" />
+
+            <Button
+                android:id="@+id/btnSem4"
+                android:layout_marginStart="16dp"
+                style="@style/AppTheme.Button"
+                android:text="4" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/layoutSemester56"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginBottom="16dp"
+            android:layout_marginStart="32dp"
+            android:layout_marginEnd="32dp"
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:visibility="visible">
+
+            <Button
+                android:id="@+id/btnSem5"
+                android:layout_marginStart="16dp"
+                style="@style/AppTheme.Button"
+                android:text="5" />
+
+            <Button
+                android:id="@+id/btnSem6"
+                android:layout_marginStart="16dp"
+                style="@style/AppTheme.Button"
+                android:text="6" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <Button
+        android:id="@+id/btnSearch"
+        android:layout_width="128dp"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:enabled="false"
+        android:text="@string/search" />
 
 </LinearLayout>
 

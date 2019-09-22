@@ -1,6 +1,7 @@
 package hr.ferit.zavrsni;
 
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -41,6 +42,12 @@ import hr.ferit.zavrsni.interfaces.INewUserListener;
 
 public class MainActivity extends AppCompatActivity implements IEnrolledItemClickListener, ChooseCourseFragment.addCoursesListener, INewUserListener {
 
+    public static final String PR = "p";
+    public static final String AV = "a";
+    public static final String LV = "l";
+    public static final String KV = "k";
+
+
     public static final int RC_SIGN_IN = 1; //RC is request code
     public static final String ANONYMOUS = "anonymous";
     public static FloatingActionButton mFAB_AddCourse;
@@ -70,6 +77,7 @@ public class MainActivity extends AppCompatActivity implements IEnrolledItemClic
         inflater.inflate(R.menu.main_menu, menu);
         menu.findItem(R.id.search_icon).setVisible(false);
         menu.findItem(R.id.deleteItem).setVisible(false);
+        menu.findItem(R.id.filter).setVisible(false);
         return true;
     }
     @Override
@@ -87,7 +95,6 @@ public class MainActivity extends AppCompatActivity implements IEnrolledItemClic
         }
     }
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -96,6 +103,7 @@ public class MainActivity extends AppCompatActivity implements IEnrolledItemClic
         initializeFirebaseAuth();
         initializeUI();
     }
+
     private void initializeFirebaseAuth() {
         mFirebaseAuth = FirebaseAuth.getInstance();
         mAuthStateListener = new FirebaseAuth.AuthStateListener() {
@@ -180,12 +188,19 @@ public class MainActivity extends AppCompatActivity implements IEnrolledItemClic
         if (!isChooseCourseOpen) {
             isChooseCourseOpen = true;
             myToolbar.setBackgroundColor(Color.WHITE);
+            myToolbar.setNavigationIcon(R.drawable.outline_arrow_back_24);
+            myToolbar.setNavigationOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    onBackPressed();
+                }
+            });
             fragmentTransaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE).replace(R.id.fragment, mChooseCoursesFragment).addToBackStack(null).commit();
             animateFAB();
         } else {
             isChooseCourseOpen = false;
-            myToolbar.setVisibility(View.VISIBLE);
             myToolbar.setBackgroundColor(Color.TRANSPARENT);
+            myToolbar.setNavigationIcon(null);
             if (mShouldCoursesBeAdded) addToDatabase();
             mFragmentManager.popBackStack();
 
@@ -234,7 +249,6 @@ public class MainActivity extends AppCompatActivity implements IEnrolledItemClic
 
     }
 
-
     @Override
     protected void onPause() {
         super.onPause();
@@ -250,7 +264,6 @@ public class MainActivity extends AppCompatActivity implements IEnrolledItemClic
 
     }
 
-
     @Override
     public void onBackPressed() {
         super.onBackPressed();
@@ -258,27 +271,31 @@ public class MainActivity extends AppCompatActivity implements IEnrolledItemClic
         mLoadingProgressbar.setVisibility(View.GONE);
     }
 
+    @SuppressLint("RestrictedApi")
     private void checkWhatFragmentIsOpen() {
         if (isCourseOverviewOpen) {
             isCourseOverviewOpen = false;
             myToolbar.setBackgroundColor(Color.TRANSPARENT);
-            mFAB_AddCourse.setAlpha((float) 1);
-
+            mFAB_AddCourse.setVisibility(View.VISIBLE);
+            myToolbar.setNavigationIcon(null);
         } else if (isChooseCourseOpen) {
             isChooseCourseOpen = false;
             mShouldCoursesBeAdded = false;
             myToolbar.setVisibility(View.VISIBLE);
             myToolbar.setBackgroundColor(Color.TRANSPARENT);
+            myToolbar.setNavigationIcon(null);
             Animation changeFrom = AnimationUtils.loadAnimation(this, R.anim.fab_check_to_add);
             mFAB_AddCourse.setAnimation(changeFrom);
         }
     }
 
+    @SuppressLint("RestrictedApi")
     @Override
     public void onItemClicked(String courseID, String userID, View view) {
         isCourseOverviewOpen = true;
-        mFAB_AddCourse.setAlpha((float) 0);
+        mFAB_AddCourse.setVisibility(View.GONE);
         myToolbar.setBackgroundColor(Color.WHITE);
+        myToolbar.setNavigationIcon(R.drawable.outline_arrow_back_24);
         CourseOverviewFragment fragment = CourseOverviewFragment.newInstance(courseID, userID);
         FragmentManager manager = getSupportFragmentManager();
         FragmentTransaction transaction = manager.beginTransaction();

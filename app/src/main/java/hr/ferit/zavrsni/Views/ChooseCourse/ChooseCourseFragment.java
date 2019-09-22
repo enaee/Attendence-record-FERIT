@@ -14,7 +14,6 @@ import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
-import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -28,7 +27,6 @@ import android.widget.CheckedTextView;
 import android.widget.Filter;
 import android.widget.Filterable;
 import android.widget.LinearLayout;
-import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -50,10 +48,11 @@ public class ChooseCourseFragment extends Fragment {
     private static String DEGREE_LEVEL;
     private static String MODULE;
     private static String GRAD_MODULE;
+    private static int SEMESTER;
+    public Boolean isFilterOpen = true;
     //fragment.xml
     private RecyclerView recyclerView;
-    private FloatingActionButton mFABChooseCoures;
-    private Toolbar searchToolbar;
+    private FloatingActionButton mFABChooseCourses;
     //recycler_item.xml
     private View rootView;
     private String mUserID;
@@ -61,12 +60,16 @@ public class ChooseCourseFragment extends Fragment {
     private ChooseCourseViewModel mViewModel;
     private List<Course> allCourses = new ArrayList<>();
     private List<EnrolledCourse> enrolledCourses = new ArrayList<>();
+    private List<Course> allButEnrolledCourses = new ArrayList<>();
     private Map<String, Object> coursesToEnroll = new HashMap<>();
     private addCoursesListener mCheckIfShouldAddCourses;
-    private LinearLayout mLayoutSearch, mLayoutDegreeLevel, mLayoutElectiveModules, mLayoutGraduateElectiveModules;
+    //search_layout.xml
+    private LinearLayout mLayoutSearch, mLayoutDegreeLevel, mLayoutElectiveModules, mLayoutGraduateElectiveModules, mLayoutSemester14, mLayoutSemester56;
     private Button mBtnUndergraduate, mBtnGraduate, mBtnProfessional;
     private Button electivePowerEngineering, electiveCommunicationsAndInformatics, electiveComputerEngineering, electiveAutomotive, electiveInformatics;
     private Button btnA, btnB, btnC, btnD;
+    private Button btn1, btn2, btn3, btn4, btn5, btn6;
+    private Button btnSearch;
 
 
     public ChooseCourseFragment() {
@@ -92,32 +95,30 @@ public class ChooseCourseFragment extends Fragment {
         menu.findItem(R.id.user_icon).setVisible(false);
         menu.findItem(R.id.sign_out_menu).setVisible(false);
         menu.findItem(R.id.search_icon).setVisible(true);
-
+        menu.findItem(R.id.filter).setVisible(true);
         final MenuItem searchItem = menu.findItem(R.id.search_icon);
         final SearchView searchView = (SearchView) searchItem.getActionView();
-
         searchView.setQueryHint("Pretraži po nazivu...");
         searchItem.setOnActionExpandListener(new MenuItem.OnActionExpandListener() {
             @Override
             public boolean onMenuItemActionExpand(MenuItem item) {
-                searchByCourseId();
+                closeSearchByCourseID();
+                mAdapter.putData(allButEnrolledCourses);
+                isFilterOpen = false;
                 return true;
             }
 
             @Override
             public boolean onMenuItemActionCollapse(MenuItem item) {
-                closeSearchByCourseID();
-                ObjectAnimator.ofFloat(searchView, "alpha", 0f, 1f).getStartDelay();
                 return true;
             }
         });
-
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
                 InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(Activity.INPUT_METHOD_SERVICE);
                 imm.hideSoftInputFromWindow(mLayoutSearch.getWindowToken(), 0);
-                return false;
+                return true;
             }
 
             @Override
@@ -129,6 +130,24 @@ public class ChooseCourseFragment extends Fragment {
         super.onPrepareOptionsMenu(menu);
     }
 
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.filter:
+                if (isFilterOpen) {
+                    closeSearchByCourseID();
+                    mAdapter.putData(new ArrayList<Course>());
+                    isFilterOpen = false;
+                } else {
+                    searchByCourseId();
+                    isFilterOpen = true;
+                }
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+
+        }
+    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -137,9 +156,10 @@ public class ChooseCourseFragment extends Fragment {
         if (getArguments().containsKey(USER_ID)) {
             mUserID = getArguments().getString(USER_ID);
         }
-        mFABChooseCoures = rootView.findViewById(R.id.fabChooseCourses);
+        mFABChooseCourses = rootView.findViewById(R.id.fabChooseCourses);
         setViewModel();
         setRecycler();
+        searchByCourseId();
         return rootView;
     }
 
@@ -147,21 +167,18 @@ public class ChooseCourseFragment extends Fragment {
         mViewModel = ViewModelProviders.of(this).get(ChooseCourseViewModel.class);
         mViewModel.init(mUserID);
         allCourses.addAll(mViewModel.getAllCourses());
+        allButEnrolledCourses.addAll(mViewModel.getAllButEnrolled());
         enrolledCourses.addAll(mViewModel.getEnrolledCourses());
     }
 
     private void setRecycler() {
         recyclerView = rootView.findViewById(R.id.choose_course_recycler);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-        setUpAdapter();
-    }
-
-    private void setUpAdapter() {
-        mAdapter = new RecyclerAdapter(mViewModel.getAllButEnrolled());
+        mAdapter = new RecyclerAdapter(new ArrayList<Course>());
         recyclerView.setAdapter(mAdapter);
     }
 
-    // dropdown menu to choose course type
+    // filter to choose course type
     private void closeSearchByCourseID() {
         ObjectAnimator.ofFloat(mLayoutSearch, "alpha", 0f, 1f).getStartDelay();
         mLayoutSearch.setVisibility(View.GONE);
@@ -170,12 +187,12 @@ public class ChooseCourseFragment extends Fragment {
     private void searchByCourseId() {
         mLayoutSearch = rootView.findViewById(R.id.searchLayout);
         mLayoutDegreeLevel = rootView.findViewById(R.id.layoutDegreeLevel);
-        ObjectAnimator fadeIn = ObjectAnimator.ofFloat(mLayoutSearch, "alpha", 0f, 1f);
-        fadeIn.start();
         mBtnUndergraduate = rootView.findViewById(R.id.undergraduate);
         mBtnGraduate = rootView.findViewById(R.id.graduate);
         mBtnProfessional = rootView.findViewById(R.id.professional);
         mLayoutElectiveModules = rootView.findViewById(R.id.layoutElectiveModules);
+        mLayoutSemester14 = rootView.findViewById(R.id.layoutSemester14);
+        mLayoutSemester56 = rootView.findViewById(R.id.layoutSemester56);
 
         electivePowerEngineering = rootView.findViewById(R.id.electivePowerEngineering);
         electiveCommunicationsAndInformatics = rootView.findViewById(R.id.electiveCommunicationsAndInformatics);
@@ -189,45 +206,141 @@ public class ChooseCourseFragment extends Fragment {
         btnC = rootView.findViewById(R.id.btnC);
         btnD = rootView.findViewById(R.id.btnD);
 
+        btn1 = rootView.findViewById(R.id.btnSem1);
+        btn2 = rootView.findViewById(R.id.btnSem2);
+        btn3 = rootView.findViewById(R.id.btnSem3);
+        btn4 = rootView.findViewById(R.id.btnSem4);
+        btn5 = rootView.findViewById(R.id.btnSem5);
+        btn6 = rootView.findViewById(R.id.btnSem6);
+
+        btnSearch = rootView.findViewById(R.id.btnSearch);
+        btnSearch.setEnabled(false);
+        btnSearch.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                searchCourse();
+            }
+        });
+
         mLayoutSearch.setVisibility(View.VISIBLE);
+        setDegreeLevelNotClicked();
+        setElectivesNotClicked();
+        setGraduateElectivesNotClicked();
+        setSemesterNotClicked();
+        setVisibility();
         setClickListenersForDegreeLevel();
         setClickListenerForElectiveModules();
         setOnClickListenerForGraduateElectiveModules();
+        setOnClickListenerForSemester();
     }
 
-    private void setOnClickListenerForGraduateElectiveModules() {
-        btnA.setOnClickListener(new View.OnClickListener() {
+    private void setOnClickListenerForSemester() {
+        btn1.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                setGraduateElectivesNotClicked();
-                btnA.setSelected(true);
-                GRAD_MODULE = "a";
+                setSemesterNotClicked();
+                btn1.setSelected(true);
+                SEMESTER = 1;
+                btnSearch.setEnabled(true);
             }
         });
-        btnB.setOnClickListener(new View.OnClickListener() {
+        btn2.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                setGraduateElectivesNotClicked();
-                btnB.setSelected(true);
-                GRAD_MODULE = "b";
+                setSemesterNotClicked();
+                btn2.setSelected(true);
+                SEMESTER = 2;
+                btnSearch.setEnabled(true);
             }
         });
-        btnC.setOnClickListener(new View.OnClickListener() {
+        btn3.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                setGraduateElectivesNotClicked();
-                btnC.setSelected(true);
-                GRAD_MODULE = "c";
+                setSemesterNotClicked();
+                btn3.setSelected(true);
+                SEMESTER = 3;
+                btnSearch.setEnabled(true);
             }
         });
-        btnD.setOnClickListener(new View.OnClickListener() {
+        btn4.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                setGraduateElectivesNotClicked();
-                btnD.setSelected(true);
-                GRAD_MODULE = "d";
+                setSemesterNotClicked();
+                btn4.setSelected(true);
+                SEMESTER = 4;
+                btnSearch.setEnabled(true);
             }
         });
+        btn5.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                setSemesterNotClicked();
+                btn5.setSelected(true);
+                SEMESTER = 5;
+                btnSearch.setEnabled(true);
+            }
+        });
+        btn6.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                setSemesterNotClicked();
+                btn6.setSelected(true);
+                SEMESTER = 6;
+                btnSearch.setEnabled(true);
+            }
+        });
+    }
+
+    private void setClickListenersForDegreeLevel() {
+        mBtnUndergraduate.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                setDegreeLevelNotClicked();
+                setElectivesNotClicked();
+                setSemesterNotClicked();
+                setVisibility();
+                mBtnUndergraduate.setSelected(true);
+                mLayoutGraduateElectiveModules.setVisibility(View.GONE);
+                mLayoutElectiveModules.setVisibility(View.VISIBLE);
+                electiveAutomotive.setVisibility(View.GONE);
+                electiveInformatics.setVisibility(View.GONE);
+                electiveCommunicationsAndInformatics.setVisibility(View.VISIBLE);
+                DEGREE_LEVEL = "P";
+            }
+        });
+        mBtnGraduate.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                setDegreeLevelNotClicked();
+                setElectivesNotClicked();
+                setSemesterNotClicked();
+                setVisibility();
+                mBtnGraduate.setSelected(true);
+                mLayoutGraduateElectiveModules.setVisibility(View.GONE);
+                mLayoutElectiveModules.setVisibility(View.VISIBLE);
+                electiveCommunicationsAndInformatics.setVisibility(View.VISIBLE);
+                electiveAutomotive.setVisibility(View.VISIBLE);
+                electiveInformatics.setVisibility(View.GONE);
+                DEGREE_LEVEL = "D";
+            }
+        });
+        mBtnProfessional.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                setDegreeLevelNotClicked();
+                setElectivesNotClicked();
+                setSemesterNotClicked();
+                setVisibility();
+                mBtnProfessional.setSelected(true);
+                mLayoutGraduateElectiveModules.setVisibility(View.GONE);
+                mLayoutElectiveModules.setVisibility(View.VISIBLE);
+                electiveCommunicationsAndInformatics.setVisibility(View.GONE);
+                electiveAutomotive.setVisibility(View.VISIBLE);
+                electiveInformatics.setVisibility(View.VISIBLE);
+                DEGREE_LEVEL = "S";
+            }
+        });
+
     }
 
     private void setClickListenerForElectiveModules() {
@@ -236,14 +349,18 @@ public class ChooseCourseFragment extends Fragment {
             public void onClick(View v) {
                 if (DEGREE_LEVEL.equals("D")) {
                     setGraduateElectivesNotClicked();
+                    setVisibility();
                     mLayoutGraduateElectiveModules.setVisibility(View.VISIBLE);
                     btnC.setVisibility(View.VISIBLE);
                     btnD.setVisibility(View.GONE);
+                } else {
+                    setVisibility();
+                    mLayoutSemester14.setVisibility(View.VISIBLE);
+                    mLayoutSemester56.setVisibility(View.VISIBLE);
                 }
                 setElectivesNotClicked();
                 electivePowerEngineering.setSelected(true);
                 MODULE = "E";
-                searchCourse();
             }
         });
 
@@ -252,14 +369,18 @@ public class ChooseCourseFragment extends Fragment {
             public void onClick(View v) {
                 if (DEGREE_LEVEL.equals("D")) {
                     setGraduateElectivesNotClicked();
+                    setVisibility();
                     mLayoutGraduateElectiveModules.setVisibility(View.VISIBLE);
                     btnC.setVisibility(View.GONE);
                     btnD.setVisibility(View.GONE);
+                } else {
+                    setVisibility();
+                    mLayoutSemester14.setVisibility(View.VISIBLE);
+                    mLayoutSemester56.setVisibility(View.VISIBLE);
                 }
                 setElectivesNotClicked();
                 electiveCommunicationsAndInformatics.setSelected(true);
                 MODULE = "K";
-                searchCourse();
             }
         });
         electiveComputerEngineering.setOnClickListener(new View.OnClickListener() {
@@ -270,11 +391,13 @@ public class ChooseCourseFragment extends Fragment {
                     mLayoutGraduateElectiveModules.setVisibility(View.VISIBLE);
                     btnC.setVisibility(View.VISIBLE);
                     btnD.setVisibility(View.VISIBLE);
+                } else {
+                    mLayoutSemester14.setVisibility(View.VISIBLE);
+                    mLayoutSemester56.setVisibility(View.VISIBLE);
                 }
                 setElectivesNotClicked();
                 electiveComputerEngineering.setSelected(true);
                 MODULE = "R";
-                searchCourse();
             }
         });
         electiveAutomotive.setOnClickListener(new View.OnClickListener() {
@@ -282,72 +405,65 @@ public class ChooseCourseFragment extends Fragment {
             public void onClick(View v) {
                 if (DEGREE_LEVEL.equals("D")) {
                     mLayoutGraduateElectiveModules.setVisibility(View.GONE);
+                } else {
+                    mLayoutSemester14.setVisibility(View.VISIBLE);
+                    mLayoutSemester56.setVisibility(View.VISIBLE);
                 }
                 setElectivesNotClicked();
                 electiveAutomotive.setSelected(true);
                 MODULE = "A";
-                searchCourse();
             }
         });
         electiveInformatics.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                mLayoutSemester14.setVisibility(View.VISIBLE);
+                mLayoutSemester56.setVisibility(View.VISIBLE);
                 setElectivesNotClicked();
                 electiveInformatics.setSelected(true);
                 MODULE = "I";
-                searchCourse();
             }
         });
     }
 
-    private void setClickListenersForDegreeLevel() {
+    private void setOnClickListenerForGraduateElectiveModules() {
+        btnA.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                setGraduateElectivesNotClicked();
+                btnA.setSelected(true);
+                mLayoutSemester14.setVisibility(View.VISIBLE);
+                GRAD_MODULE = "a";
 
-        mBtnUndergraduate.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                setDegreeLevelNotClicked();
-                setElectivesNotClicked();
-                mBtnUndergraduate.setSelected(true);
-                mLayoutGraduateElectiveModules.setVisibility(View.GONE);
-                mLayoutElectiveModules.setVisibility(View.VISIBLE);
-                electiveAutomotive.setVisibility(View.GONE);
-                electiveInformatics.setVisibility(View.GONE);
-                electiveCommunicationsAndInformatics.setVisibility(View.VISIBLE);
-                DEGREE_LEVEL = "P";
-                searchCourse();
             }
         });
-        mBtnGraduate.setOnClickListener(new View.OnClickListener() {
+        btnB.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                setDegreeLevelNotClicked();
-                setElectivesNotClicked();
-                mBtnGraduate.setSelected(true);
-                mLayoutGraduateElectiveModules.setVisibility(View.GONE);
-                mLayoutElectiveModules.setVisibility(View.VISIBLE);
-                electiveCommunicationsAndInformatics.setVisibility(View.VISIBLE);
-                electiveAutomotive.setVisibility(View.VISIBLE);
-                electiveInformatics.setVisibility(View.GONE);
-                DEGREE_LEVEL = "D";
-                searchCourse();
+                setGraduateElectivesNotClicked();
+                btnB.setSelected(true);
+                mLayoutSemester14.setVisibility(View.VISIBLE);
+                GRAD_MODULE = "b";
             }
         });
-        mBtnProfessional.setOnClickListener(new View.OnClickListener() {
+        btnC.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                setDegreeLevelNotClicked();
-                setElectivesNotClicked();
-                mBtnProfessional.setSelected(true);
-                mLayoutGraduateElectiveModules.setVisibility(View.GONE);
-                mLayoutElectiveModules.setVisibility(View.VISIBLE);
-                electiveCommunicationsAndInformatics.setVisibility(View.GONE);
-                electiveAutomotive.setVisibility(View.VISIBLE);
-                electiveInformatics.setVisibility(View.VISIBLE);
-                DEGREE_LEVEL = "S";
-                searchCourse();
+                setGraduateElectivesNotClicked();
+                btnC.setSelected(true);
+                mLayoutSemester14.setVisibility(View.VISIBLE);
+                GRAD_MODULE = "c";
             }
         });
-
+        btnD.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                setGraduateElectivesNotClicked();
+                btnD.setSelected(true);
+                mLayoutSemester14.setVisibility(View.VISIBLE);
+                GRAD_MODULE = "d";
+            }
+        });
     }
 
     private void setDegreeLevelNotClicked() {
@@ -376,20 +492,45 @@ public class ChooseCourseFragment extends Fragment {
         GRAD_MODULE = null;
     }
 
+    private void setSemesterNotClicked() {
+        btn1.setSelected(false);
+        btn2.setSelected(false);
+        btn3.setSelected(false);
+        btn4.setSelected(false);
+        btn5.setSelected(false);
+        btn6.setSelected(false);
+        btnSearch.setEnabled(true);
+        SEMESTER = 0;
+    }
+
+    private void setVisibility() {
+        btnSearch.setEnabled(false);
+        if (GRAD_MODULE == null) {
+            mLayoutSemester14.setVisibility(View.GONE);
+            mLayoutSemester56.setVisibility(View.GONE);
+            if (MODULE == null) {
+                mLayoutSemester14.setVisibility(View.GONE);
+                mLayoutSemester56.setVisibility(View.GONE);
+                mLayoutGraduateElectiveModules.setVisibility(View.GONE);
+                if (DEGREE_LEVEL == null) {
+                    mLayoutElectiveModules.setVisibility(View.GONE);
+                }
+            }
+        }
+    }
+
     private void searchCourse() {
         List<Course> list = new ArrayList<>();
         List<Course> degreeList = new ArrayList<>();
         List<Course> electiveList = new ArrayList<>();
         List<Course> electiveGradList = new ArrayList<>();
-        for (Course course : mViewModel.getAllButEnrolled()) {
+        List<Course> semesterList = new ArrayList<>();
+        for (Course course : allButEnrolledCourses) {
             if (course.getId().startsWith(DEGREE_LEVEL)) {
                 degreeList.add(course);
             }
         }
-
-        if (MODULE == null && GRAD_MODULE == null) {
-            list = degreeList;
-        } else if (MODULE != null && GRAD_MODULE == null) {
+        if (MODULE != null) {
             for (Course course : degreeList) {
                 Character ch = course.getId().charAt(1);
                 if (!ch.equals('E') && !ch.equals('K') && !ch.equals('R') && !ch.equals('A') && !ch.equals('I')) {
@@ -399,17 +540,40 @@ public class ChooseCourseFragment extends Fragment {
                 }
             }
             list = electiveList;
-        } else {
-            for (Course course : electiveList) {
-                if (course.getId().contains(MODULE + GRAD_MODULE)) {
-                    electiveGradList.add(course);
+
+            if (GRAD_MODULE != null) {
+                for (Course course : electiveList) {
+                    String mGm = MODULE + GRAD_MODULE;
+                    if (!course.getId().contains("a") && !course.getId().contains("b") && !course.getId().contains("c") && !course.getId().contains("d")) {
+                        electiveGradList.add(course);
+                    } else if (course.getId().contains(mGm)) {
+                        electiveGradList.add(course);
+                    }
+                    list = electiveGradList;
                 }
-                list = electiveGradList;
+                if (SEMESTER != 0) {
+                    for (Course c : electiveGradList) {
+                        if (c.getSemester() == SEMESTER) {
+                            semesterList.add(c);
+                        }
+                    }
+                    list = semesterList;
+                }
+            } else {
+                if (SEMESTER != 0) {
+                    for (Course c : electiveList) {
+                        if (c.getSemester() == SEMESTER) {
+                            semesterList.add(c);
+                        }
+                    }
+                    list = semesterList;
+                }
             }
         }
         mAdapter.putData(list);
+        closeSearchByCourseID();
     }
-
+//end of filter
 
     @Override
     public void onAttach(Context context) {
@@ -499,25 +663,11 @@ public class ChooseCourseFragment extends Fragment {
         }
 
         public void putData(List<Course> list) {
+            adapterCourseList.clear();
             adapterCourseList = list;
+            adapterCourseListFull = new ArrayList<>(adapterCourseList);
             notifyDataSetChanged();
         }
-
-/*        private void setEnrolledCourses(ViewHolder holder, Course course) {
-            for (EnrolledCourse enrolledCourse : enrolledCourses) {
-                if (enrolledCourse.getId().equals(course.getId())) {
-                    holder.courseName.setBackgroundColor(Color.parseColor("#4e7ca9"));
-                    holder.courseName.setTextColor(Color.WHITE);
-                    holder.root.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            Toast.makeText(getContext(), "Already enrolled", Toast.LENGTH_SHORT).show();
-                        }
-                    });
-                    break;
-                }
-            }
-        }*/
 
         private void setUpListItemView(ViewHolder holder, Course course) {
             //setEnrolledCourses(holder, course);
@@ -547,7 +697,7 @@ public class ChooseCourseFragment extends Fragment {
                     if (!mViewModel.getCoursesToEnroll().isEmpty()) {
                         if (mViewModel.getCoursesToEnroll().size() == 1) {
                             Animation changeFrom = AnimationUtils.loadAnimation(getContext(), R.anim.fab_check_to_add);
-                            mFABChooseCoures.setAnimation(changeFrom);
+                            mFABChooseCourses.setAnimation(changeFrom);
                         }
                         mCheckIfShouldAddCourses.checkIfShouldAddCourses(true, mViewModel.getCoursesToEnroll());
                     } else {
@@ -563,11 +713,9 @@ public class ChooseCourseFragment extends Fragment {
             if (b) {
                 holder.courseName.setBackgroundColor(Color.parseColor("#4e7ca9"));
                 holder.courseName.setTextColor(Color.WHITE);
-                Toast.makeText(getContext(), "checked", Toast.LENGTH_SHORT).show();
             } else {
                 holder.courseName.setBackgroundColor(Color.TRANSPARENT);
                 holder.courseName.setTextColor(Color.BLACK);
-                Toast.makeText(getContext(), "UNchecked", Toast.LENGTH_SHORT).show();
             }
         }
 

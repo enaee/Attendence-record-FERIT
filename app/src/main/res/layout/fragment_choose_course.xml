@@ -15,7 +15,7 @@
         <include
             android:id="@+id/searchLayout"
             layout="@layout/search_layout"
-            android:visibility="gone" />
+            android:visibility="visible" />
 
         <android.support.v7.widget.RecyclerView
             android:id="@+id/choose_course_recycler"

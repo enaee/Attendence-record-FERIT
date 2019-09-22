@@ -33,10 +33,6 @@ public class CourseOverviewFragment extends Fragment {
 
     public static final String COURSE_ID = "courseID";
     public static final String USER_ID = "userID";
-    private static final String TOTAL = "total";
-    private static final String PRESENT = "present";
-    private static final String ABSENT = "absent";
-    private static final String SIGNED = "signed";
     public CourseOverviewViewModel mViewModel;
     private ViewPager mViewPager;
     private TabLayout mTabLayout;
@@ -159,7 +155,7 @@ public class CourseOverviewFragment extends Fragment {
         mPercentageAbsent.setText(abs + "%\nOdsutnost");
 
         if (abs >= 30) {
-            mPercentageAbsent.setTextColor(Color.RED);
+            mPercentageAbsent.setTextColor(Color.parseColor("#FF0000"));
         } else if (abs >= 20) {
             mPercentageAbsent.setTextColor(Color.parseColor("#C77800"));
         } else {

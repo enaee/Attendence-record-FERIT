@@ -1,10 +1,5 @@
 package hr.ferit.zavrsni.Models;
 
-import com.google.firebase.database.Exclude;
-
-import java.util.HashMap;
-import java.util.Map;
-
 public class Course {
 
     private String name;
@@ -13,6 +8,10 @@ public class Course {
     private float A;
     private float L;
     private float K;
+    private String type;
+    private String study_programme;
+    private String course;
+    private int semester;
 
 
     public Course() {
@@ -22,26 +21,17 @@ public class Course {
         this.name = name;
     }
 
-    public Course(String name, float p, float a, float l, float k) {
+    public Course(String name, String id, float p, float a, float l, float k, String type, String study_programme, String course, int semester) {
         this.name = name;
+        this.id = id;
         P = p;
         A = a;
         L = l;
         K = k;
-    }
-
-    @Exclude
-    public Map<String, Object> toMap() {
-        HashMap<String, Object> result = new HashMap<>();
-
-        result.put("name", name);
-        result.put("id", id);
-        result.put("p", P);
-        result.put("a", A);
-        result.put("l", L);
-        result.put("k", K);
-
-        return result;
+        this.type = type;
+        this.study_programme = study_programme;
+        this.course = course;
+        this.semester = semester;
     }
 
     public String getId() {
@@ -91,5 +81,37 @@ public class Course {
 
     public void setK(float k) {
         K = k;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
+
+    public String getStudy_programme() {
+        return study_programme;
+    }
+
+    public void setStudy_programme(String study_programme) {
+        this.study_programme = study_programme;
+    }
+
+    public String getCourse() {
+        return course;
+    }
+
+    public void setCourse(String course) {
+        this.course = course;
+    }
+
+    public int getSemester() {
+        return semester;
+    }
+
+    public void setSemester(int semester) {
+        this.semester = semester;
     }
 }

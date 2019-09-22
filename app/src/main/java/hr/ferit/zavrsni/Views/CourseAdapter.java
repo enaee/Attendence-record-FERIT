@@ -53,21 +53,12 @@ public class CourseAdapter extends ArrayAdapter<EnrolledCourse> {
             progressBarAbsent.setProgress(perc + abs);
             mPercentage.setText(perc + "%");
             if (perc >= 70) {
-                progressBar.setVisibility(View.INVISIBLE);
-                progressBarAbsent.setVisibility(View.INVISIBLE);
-                mPercentage.setVisibility(View.INVISIBLE);
                 ivCourseDone.setVisibility(View.VISIBLE);
-                ivCourseWarning.setVisibility(View.GONE);
+                ivCourseWarning.setVisibility(View.INVISIBLE);
             } else if (abs >= 30) {
                 ivCourseWarning.setVisibility(View.VISIBLE);
-                progressBar.setProgress(perc);
-                progressBarAbsent.setProgress(perc + abs);
-                mPercentage.setText(perc + "%");
             } else if (abs >= 20) {
                 ivCourseWarning.setVisibility(View.VISIBLE);
-                progressBar.setProgress(perc);
-                progressBarAbsent.setProgress(perc + abs);
-                mPercentage.setText(perc + "%");
             } else {
                 ivCourseWarning.setVisibility(View.INVISIBLE);
                 progressBar.setProgress(perc);

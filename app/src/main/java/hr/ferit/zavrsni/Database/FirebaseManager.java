@@ -48,7 +48,7 @@ public class FirebaseManager {
     }
     private FirebaseManager(String userID) {
         enrolledCoursesReference = FirebaseDatabase.getInstance().getReference().child("enrolledCourses").child(userID);
-        coursesReference = FirebaseDatabase.getInstance().getReference().child("Courses");
+        coursesReference = FirebaseDatabase.getInstance().getReference().child("courses");
         usersReference = FirebaseDatabase.getInstance().getReference().child("users");
         enrolledCoursesMap = new HashMap<>();
         coursesMap = new HashMap<>();
@@ -112,8 +112,6 @@ public class FirebaseManager {
             coursesReference.addValueEventListener(mCoursesListener);
         }
     }
-
-
 
 
     public void removeListeners() {

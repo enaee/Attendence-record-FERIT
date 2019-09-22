@@ -16,7 +16,7 @@
         <item name="colorPrimaryDark">@color/primaryDarkColor</item>
         <item name="colorAccent">@color/secondaryColor</item>
         <item name="android:windowBackground">@color/background</item>
-        <item name="colorControlNormal">@android:color/holo_green_dark</item>
+        <item name="colorControlNormal">@android:color/holo_blue_light</item>
         <item name="colorControlActivated">@color/secondaryLightColor</item>
         <item name="colorControlHighlight">@color/primaryDarkColor</item>
     </style>
@@ -24,20 +24,30 @@
 
     <style name="AppTheme.Button" parent="Widget.AppCompat.Button">
         <item name="android:textColor">@color/primaryTextColor</item>
-        <item name="android:layout_weight">1</item>
+        <item name="android:layout_height">70dp</item>
+        <item name="android:layout_width">70dp</item>
         <item name="android:background">@drawable/border_selector</item>
         <item name="android:gravity">center</item>
-        <item name="android:width">1dp</item>
+        <item name="android:padding">16dp</item>
+        <item name="android:textAlignment">center</item>
+    </style>
+
+    <style name="AppTheme.Button.Semester" parent="Widget.AppCompat.Button">
+        <item name="android:textColor">@color/primaryTextColor</item>
+        <item name="android:layout_height">70dp</item>
+        <item name="android:layout_width">70dp</item>
+        <item name="android:background">@drawable/border_selector</item>
+        <item name="android:gravity">center</item>
         <item name="android:padding">16dp</item>
         <item name="android:textAlignment">center</item>
     </style>
 
     <style name="AppTheme.ButtonSelected" parent="Widget.AppCompat.Button">
         <item name="android:textColor">@color/primaryTextColor</item>
-        <item name="android:layout_weight">1</item>
+        <item name="android:layout_height">70dp</item>
+        <item name="android:layout_width">70dp</item>
         <item name="android:background">@drawable/border_selected</item>
         <item name="android:gravity">center</item>
-        <item name="android:width">1dp</item>
         <item name="android:padding">16dp</item>
         <item name="android:textAlignment">center</item>
     </style>

@@ -7,12 +7,22 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import hr.ferit.zavrsni.Database.FirebaseManager;
 import hr.ferit.zavrsni.Models.Course;
 import hr.ferit.zavrsni.Models.EnrolledCourse;
-import hr.ferit.zavrsni.Database.FirebaseManager;
+
+import static hr.ferit.zavrsni.MainActivity.AV;
+import static hr.ferit.zavrsni.MainActivity.KV;
+import static hr.ferit.zavrsni.MainActivity.LV;
+import static hr.ferit.zavrsni.MainActivity.PR;
 
 public class ChooseCourseViewModel extends ViewModel {
 
+
+    private static final String TOTAL = "total";
+    private static final String PRESENT = "present";
+    private static final String ABSENT = "absent";
+    private static final String SIGNED = "signed";
 
     private List<Course> coursesList;
     private List<EnrolledCourse> enrolledCourses;
@@ -86,43 +96,43 @@ public class ChooseCourseViewModel extends ViewModel {
     private Map<String, Object> prepareCourse(final Course courseData) {
         Map<String, Object> mapP = new HashMap<String, Object>() {
             {
-                put("total", courseData.getP());
-                put("present", 0);
-                put("absent", 0);
-                put("signed", 0);
+                put(TOTAL, courseData.getP());
+                put(PRESENT, 0);
+                put(ABSENT, 0);
+                put(SIGNED, 0);
             }
         };
         Map<String, Object> mapA = new HashMap<String, Object>() {
             {
-                put("total", courseData.getA());
-                put("present", 0);
-                put("absent", 0);
-                put("signed", 0);
+                put(TOTAL, courseData.getA());
+                put(PRESENT, 0);
+                put(ABSENT, 0);
+                put(SIGNED, 0);
             }
         };
         Map<String, Object> mapL = new HashMap<String, Object>() {
             {
-                put("total", courseData.getL());
-                put("present", 0);
-                put("absent", 0);
-                put("signed", 0);
+                put(TOTAL, courseData.getL());
+                put(PRESENT, 0);
+                put(ABSENT, 0);
+                put(SIGNED, 0);
             }
         };
         Map<String, Object> mapK = new HashMap<String, Object>() {
             {
-                put("total", courseData.getK());
-                put("present", 0);
-                put("absent", 0);
-                put("signed", 0);
+                put(TOTAL, courseData.getK());
+                put(PRESENT, 0);
+                put(ABSENT, 0);
+                put(SIGNED, 0);
             }
         };
         Map<String, Object> course = new HashMap<>();
         course.put("name", courseData.getName());
         course.put("id", courseData.getId());
-        course.put("p", mapP);
-        course.put("a", mapA);
-        course.put("l", mapL);
-        course.put("k", mapK);
+        course.put(PR, mapP);
+        course.put(AV, mapA);
+        course.put(LV, mapL);
+        course.put(KV, mapK);
         return course;
     }
 

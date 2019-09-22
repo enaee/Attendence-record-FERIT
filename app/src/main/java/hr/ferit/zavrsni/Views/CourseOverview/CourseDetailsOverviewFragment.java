@@ -10,8 +10,8 @@ import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -23,6 +23,11 @@ import hr.ferit.zavrsni.Models.EnrolledCourse;
 import hr.ferit.zavrsni.R;
 import hr.ferit.zavrsni.Utils.CourseElement;
 import hr.ferit.zavrsni.viewmodels.CourseOverviewViewModel;
+
+import static hr.ferit.zavrsni.MainActivity.AV;
+import static hr.ferit.zavrsni.MainActivity.KV;
+import static hr.ferit.zavrsni.MainActivity.LV;
+import static hr.ferit.zavrsni.MainActivity.PR;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -36,16 +41,19 @@ public class CourseDetailsOverviewFragment extends Fragment {
     private static final String ABSENT = "absent";
     private static final String SIGNED = "signed";
 
+    private TextView tvTotalPresent, tvTotalAbsent, tvTotalSigned, tvPresentInNumbers;
+    private ImageView ivEditDone;
+    private LinearLayout LayoutPresent, LayoutAbsent, LayoutSigned;
+    private ImageButton mBtnOpenEdit, btnPresentSub, btnPresentAdd, btnAbsSub, btnAbsAdd, btnSignSub, btnSignAdd;
 
-    private TextView mTotalPresent, mTotalAbsent, mTotalSigned;
-    private LinearLayout mLayoutPresent, mLayoutAbsent, mLayoutSigned;
     private CourseElement courseElement;
     private ViewGroup mRootView;
     private String mUserID, mCourseID, mCourseType;
     private EnrolledCourse mEnrolledCourse;
     private Map<String, Float> mCourseTypeAttendance;
-    private EditText mInputSigned;
-    private ImageButton mBtnDone;
+    private Boolean editMode = false;
+
+
 
     private CourseOverviewViewModel mViewModel;
 
@@ -74,16 +82,27 @@ public class CourseDetailsOverviewFragment extends Fragment {
     }
 
     private void initialize() {
-        mTotalPresent = mRootView.findViewById(R.id.tvPresentCount);
-        mTotalAbsent = mRootView.findViewById(R.id.tvAbsentCount);
-        mTotalSigned = mRootView.findViewById(R.id.tvSignedCount);
-        mLayoutPresent = mRootView.findViewById(R.id.layoutPresent);
-        mLayoutAbsent = mRootView.findViewById(R.id.layoutAbsent);
-        mLayoutSigned = mRootView.findViewById(R.id.layoutSigned);
-        mInputSigned = mRootView.findViewById(R.id.etSignedInput);
-        mBtnDone = mRootView.findViewById(R.id.btnEditDone);
-        mInputSigned.setVisibility(View.GONE);
-        mBtnDone.setVisibility(View.GONE);
+        tvPresentInNumbers = mRootView.findViewById(R.id.tvPresentInNumbers);
+        tvTotalPresent = mRootView.findViewById(R.id.tvPresentCount);
+        tvTotalAbsent = mRootView.findViewById(R.id.tvAbsentCount);
+        tvTotalSigned = mRootView.findViewById(R.id.tvSignedCount);
+        LayoutPresent = mRootView.findViewById(R.id.layoutPresent);
+        LayoutAbsent = mRootView.findViewById(R.id.layoutAbsent);
+        LayoutSigned = mRootView.findViewById(R.id.layoutSigned);
+        mBtnOpenEdit = mRootView.findViewById(R.id.ibtnOpenEdit);
+        ivEditDone = mRootView.findViewById(R.id.ivEditDone);
+        btnPresentSub = mRootView.findViewById(R.id.btnPresentSubstract);
+        btnPresentAdd = mRootView.findViewById(R.id.btnPresentAdd);
+        btnAbsSub = mRootView.findViewById(R.id.btnAbsentSubstract);
+        btnAbsAdd = mRootView.findViewById(R.id.btnAbsentAdd);
+        btnSignSub = mRootView.findViewById(R.id.btnSignSubstract);
+        btnSignAdd = mRootView.findViewById(R.id.btnSignAdd);
+        btnPresentAdd.setVisibility(View.GONE);
+        btnPresentSub.setVisibility(View.GONE);
+        btnAbsAdd.setVisibility(View.GONE);
+        btnAbsSub.setVisibility(View.GONE);
+        btnSignAdd.setVisibility(View.GONE);
+        btnSignSub.setVisibility(View.GONE);
     }
 
     private void setUpView() {
@@ -97,19 +116,19 @@ public class CourseDetailsOverviewFragment extends Fragment {
 
     private void setUpCourseData() {
         switch (mCourseType) {
-            case "p":
+            case PR:
                 mCourseTypeAttendance = mEnrolledCourse.getP();
                 checkIfNull(mCourseTypeAttendance);
                 break;
-            case "a":
+            case AV:
                 mCourseTypeAttendance = mEnrolledCourse.getA();
                 checkIfNull(mCourseTypeAttendance);
                 break;
-            case "l":
+            case LV:
                 mCourseTypeAttendance = mEnrolledCourse.getL();
                 checkIfNull(mCourseTypeAttendance);
                 break;
-            case "k":
+            case KV:
                 mCourseTypeAttendance = mEnrolledCourse.getK();
                 checkIfNull(mCourseTypeAttendance);
                 break;
@@ -118,51 +137,136 @@ public class CourseDetailsOverviewFragment extends Fragment {
 
     private void checkIfNull(Map<String, Float> mCourseTypeAttendance) {
         if (mCourseTypeAttendance.get(TOTAL) != 0) {
-            mLayoutPresent.setElevation(2);
-            mLayoutAbsent.setElevation(2);
-            mLayoutSigned.setElevation(2);
+            LayoutPresent.setElevation(2);
+            LayoutAbsent.setElevation(2);
+            LayoutSigned.setElevation(2);
             setNumbers();
             setClickListeners();
         } else {
+            mBtnOpenEdit.setVisibility(View.INVISIBLE);
             TextView tvPresent = mRootView.findViewById(R.id.tvPresent);
             tvPresent.setTextColor(Color.parseColor("#66666666"));
             TextView tvAbsent = mRootView.findViewById(R.id.tvAbsent);
             tvAbsent.setTextColor(Color.parseColor("#66666666"));
             TextView tvSigned = mRootView.findViewById(R.id.tvSigned);
             tvSigned.setTextColor(Color.parseColor("#66666666"));
-            mLayoutPresent.setBackgroundColor(Color.parseColor("#55ffffff"));
-            mLayoutAbsent.setBackgroundColor(Color.parseColor("#55ffffff"));
-            mLayoutSigned.setBackgroundColor(Color.parseColor("#55ffffff"));
+            LayoutPresent.setBackgroundColor(Color.parseColor("#55ffffff"));
+            LayoutAbsent.setBackgroundColor(Color.parseColor("#55ffffff"));
+            LayoutSigned.setBackgroundColor(Color.parseColor("#55ffffff"));
         }
     }
 
     private void setNumbers() {
-        mTotalPresent.setText(Float.toString(mCourseTypeAttendance.get(PRESENT)));
-        mTotalAbsent.setText(Float.toString(mCourseTypeAttendance.get(ABSENT)));
-        mTotalSigned.setText(Float.toString(mCourseTypeAttendance.get(SIGNED)));
+        Float presentSignedCount = mCourseTypeAttendance.get(PRESENT) + mCourseTypeAttendance.get(SIGNED);
+        tvPresentInNumbers.setText(presentSignedCount + "/" + mCourseTypeAttendance.get(TOTAL));
+        tvTotalPresent.setText(Float.toString(mCourseTypeAttendance.get(PRESENT)));
+        tvTotalAbsent.setText(Float.toString(mCourseTypeAttendance.get(ABSENT)));
+        tvTotalSigned.setText(Float.toString(mCourseTypeAttendance.get(SIGNED)));
     }
 
     private void setClickListeners() {
-        mLayoutPresent.setOnClickListener(new View.OnClickListener() {
+        View.OnClickListener deleteClickListener = new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                updateCourseData(PRESENT);
+
             }
-        });
-        mLayoutAbsent.setOnClickListener(new View.OnClickListener() {
+        };
+        mBtnOpenEdit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                updateCourseData(ABSENT);
+                mBtnOpenEdit.setVisibility(View.GONE);
+                ivEditDone.setVisibility(View.VISIBLE);
+                btnPresentAdd.setVisibility(View.VISIBLE);
+                btnPresentSub.setVisibility(View.VISIBLE);
+                btnAbsAdd.setVisibility(View.VISIBLE);
+                btnAbsSub.setVisibility(View.VISIBLE);
+                btnSignAdd.setVisibility(View.VISIBLE);
+                btnSignSub.setVisibility(View.VISIBLE);
+                editMode = true;
             }
         });
-        mLayoutSigned.setOnClickListener(new View.OnClickListener() {
+        ivEditDone.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mBtnOpenEdit.setVisibility(View.VISIBLE);
+                ivEditDone.setVisibility(View.GONE);
+                btnPresentAdd.setVisibility(View.GONE);
+                btnPresentSub.setVisibility(View.GONE);
+                btnAbsAdd.setVisibility(View.GONE);
+                btnAbsSub.setVisibility(View.GONE);
+                btnSignAdd.setVisibility(View.GONE);
+                btnSignSub.setVisibility(View.GONE);
+                editMode = false;
+            }
+        });
+
+        LayoutPresent.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (!editMode) updateCourseData(PRESENT);
+            }
+        });
+        LayoutAbsent.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (!editMode) updateCourseData(ABSENT);
+            }
+        });
+        LayoutSigned.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (!editMode) updateCourseData(SIGNED);
+            }
+        });
+
+        btnSignAdd.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 updateCourseData(SIGNED);
             }
         });
+        btnAbsAdd.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                updateCourseData(ABSENT);
+            }
+        });
+        btnPresentAdd.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                updateCourseData(PRESENT);
+            }
+        });
 
+        btnPresentSub.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                substractCourseData(PRESENT);
+            }
+        });
+        btnAbsSub.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                substractCourseData(ABSENT);
+            }
+        });
+        btnSignSub.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                substractCourseData(SIGNED);
+            }
+        });
+    }
 
+    private void substractCourseData(String typeOfAttendance) {
+        if (mCourseTypeAttendance.get(typeOfAttendance) > 0) {
+            mCourseTypeAttendance.put(typeOfAttendance, mCourseTypeAttendance.get(typeOfAttendance) - 1);
+            float newCount = mCourseTypeAttendance.get(typeOfAttendance);
+            setNumbers();
+            mViewModel.setCourseData(mCourseType, typeOfAttendance, newCount);
+        } else {
+            Toast.makeText(getContext(), "Sorry, you've reached 0.", Toast.LENGTH_SHORT).show();
+        }
     }
 
     private void updateCourseData(String typeOfAttendance) {
@@ -175,10 +279,7 @@ public class CourseDetailsOverviewFragment extends Fragment {
         } else {
             Toast.makeText(getContext(), "Sorry, you've used all your input.", Toast.LENGTH_SHORT).show();
         }
-
-
     }
-
     private boolean checkIfCanAdd() {
         float totalInput = mCourseTypeAttendance.get(PRESENT) + mCourseTypeAttendance.get(ABSENT) + mCourseTypeAttendance.get(SIGNED);
         if (totalInput < mCourseTypeAttendance.get(TOTAL)) {

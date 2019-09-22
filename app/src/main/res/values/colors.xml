@@ -6,8 +6,10 @@
     <color name="secondaryColor">#18507a</color>
     <color name="secondaryLightColor">#4e7ca9</color>
     <color name="secondaryDarkColor">#022A4D</color>
-    <color name="colorWarning">#C77800</color>
+    <color name="colorAbsent">#FA7369</color>
+    <color name="colorSignMeIn">#FFD90F</color>
     <color name="error">#B00020</color>
     <color name="primaryTextColor">#000000</color>
     <color name="secondaryTextColor">#ffffff</color>
+    <color name="red">#FF0000</color>
 </resources>
