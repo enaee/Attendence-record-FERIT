@@ -7,7 +7,6 @@ import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
-import android.support.v4.widget.SwipeRefreshLayout;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -70,22 +69,6 @@ public class EnrolledCoursesFragment extends Fragment {
         if (getArguments().containsKey(USER_ID)) {
             mUserID = getArguments().getString(USER_ID);
         }
-        final SwipeRefreshLayout pullToRefresh = mRootView.findViewById(R.id.pullToRefresh);
-        pullToRefresh.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
-            @Override
-            public void onRefresh() {
-                mCourses = mViewModel.getEnrolledCourses().getValue();
-                mCourseAdapter.clear();
-                mCourseAdapter.addAll(mCourses);
-                if (mCourses.size() == 0) {
-                    mNoEnrolledCourses.setVisibility(View.VISIBLE);
-                } else {
-                    mNoEnrolledCourses.setVisibility(View.GONE);
-                } // your code
-                pullToRefresh.setRefreshing(false);
-            }
-        });
-
         initializeUI();
         setLiveData();
         return mRootView;

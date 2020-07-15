@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Zavrsni</string>
+    <string name="app_name">FERIT</string>
 
 
     <string name="exception_message">must implement OnFragmentInteractionListener</string>

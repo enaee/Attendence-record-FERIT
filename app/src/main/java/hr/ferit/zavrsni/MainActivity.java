@@ -204,7 +204,6 @@ public class MainActivity extends AppCompatActivity implements IEnrolledItemClic
             if (mShouldCoursesBeAdded) addToDatabase();
             mFragmentManager.popBackStack();
 
-
             fragmentTransaction.replace(R.id.fragment, mEnrolledCoursesFragment).commit();
             animateFAB();
         }
@@ -281,6 +280,7 @@ public class MainActivity extends AppCompatActivity implements IEnrolledItemClic
         } else if (isChooseCourseOpen) {
             isChooseCourseOpen = false;
             mShouldCoursesBeAdded = false;
+            mFAB_AddCourse.setVisibility(View.VISIBLE);
             myToolbar.setVisibility(View.VISIBLE);
             myToolbar.setBackgroundColor(Color.TRANSPARENT);
             myToolbar.setNavigationIcon(null);
@@ -293,13 +293,20 @@ public class MainActivity extends AppCompatActivity implements IEnrolledItemClic
     @Override
     public void onItemClicked(String courseID, String userID, View view) {
         isCourseOverviewOpen = true;
-        mFAB_AddCourse.setVisibility(View.GONE);
+
         myToolbar.setBackgroundColor(Color.WHITE);
         myToolbar.setNavigationIcon(R.drawable.outline_arrow_back_24);
+        myToolbar.setNavigationOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                onBackPressed();
+            }
+        });
         CourseOverviewFragment fragment = CourseOverviewFragment.newInstance(courseID, userID);
         FragmentManager manager = getSupportFragmentManager();
         FragmentTransaction transaction = manager.beginTransaction();
         transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE).replace(R.id.fragment, fragment).addToBackStack(null).commit();
+        mFAB_AddCourse.setVisibility(View.GONE);
     }
 
     @Override

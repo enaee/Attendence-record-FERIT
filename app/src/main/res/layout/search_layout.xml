@@ -6,6 +6,7 @@
     android:background="@color/primaryLightColor"
     android:orientation="vertical">
 
+
     <LinearLayout
         android:id="@+id/layoutDegreeLevel"
         android:layout_width="match_parent"
@@ -21,7 +22,7 @@
             android:id="@+id/undergraduate"
             style="@style/AppTheme.Button"
             android:contentDescription="Preddiplomski"
-            android:textSize="24sp"
+            android:textSize="20sp"
             android:text="P" />
 
         <Button
@@ -55,31 +56,35 @@
         <Button
             style="@style/AppTheme.Button"
             android:id="@+id/electivePowerEngineering"
+            android:textSize="20sp"
             android:text="E" />
 
         <Button
             android:id="@+id/electiveCommunicationsAndInformatics"
             android:layout_marginStart="16dp"
             style="@style/AppTheme.Button"
+            android:textSize="20sp"
             android:text="K" />
 
         <Button
             android:id="@+id/electiveComputerEngineering"
             android:layout_marginStart="16dp"
             style="@style/AppTheme.Button"
+            android:textSize="20sp"
             android:text="R" />
 
         <Button
             android:id="@+id/electiveAutomotive"
             android:layout_marginStart="16dp"
             style="@style/AppTheme.Button"
-
+            android:textSize="20sp"
             android:text="A" />
 
         <Button
             android:id="@+id/electiveInformatics"
             android:layout_marginStart="16dp"
             style="@style/AppTheme.Button"
+            android:textSize="20sp"
             android:text="I" />
     </LinearLayout>
 

@@ -49,10 +49,12 @@ public class ChooseCourseFragment extends Fragment {
     private static String MODULE;
     private static String GRAD_MODULE;
     private static int SEMESTER;
-    public Boolean isFilterOpen = true;
+    public Boolean isFilterOpen = false;
     //fragment.xml
     private RecyclerView recyclerView;
     private FloatingActionButton mFABChooseCourses;
+    private Button btnCheckAll;
+    private LinearLayout layoutInstructions;
     //recycler_item.xml
     private View rootView;
     private String mUserID;
@@ -70,6 +72,7 @@ public class ChooseCourseFragment extends Fragment {
     private Button btnA, btnB, btnC, btnD;
     private Button btn1, btn2, btn3, btn4, btn5, btn6;
     private Button btnSearch;
+    private List<Course> filteredByIdCourseList = new ArrayList<>();
 
 
     public ChooseCourseFragment() {
@@ -105,11 +108,13 @@ public class ChooseCourseFragment extends Fragment {
                 closeSearchByCourseID();
                 mAdapter.putData(allButEnrolledCourses);
                 isFilterOpen = false;
+                btnCheckAll.setVisibility(View.GONE);
+                layoutInstructions.setVisibility(View.GONE);
                 return true;
             }
-
             @Override
             public boolean onMenuItemActionCollapse(MenuItem item) {
+                mAdapter.putData(mViewModel.getCoursesToEnrollList());
                 return true;
             }
         });
@@ -134,13 +139,16 @@ public class ChooseCourseFragment extends Fragment {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.filter:
-                if (isFilterOpen) {
-                    closeSearchByCourseID();
-                    mAdapter.putData(new ArrayList<Course>());
-                    isFilterOpen = false;
-                } else {
+                if (!isFilterOpen) {
                     searchByCourseId();
+                    mAdapter.adapterCourseList.clear();
+                    btnCheckAll.setVisibility(View.GONE);
                     isFilterOpen = true;
+                } else if (isFilterOpen) {
+                    closeSearchByCourseID();
+                    btnCheckAll.setVisibility(View.GONE);
+                    mAdapter.putData(mViewModel.getCoursesToEnrollList());
+                    isFilterOpen = false;
                 }
                 return true;
             default:
@@ -157,34 +165,15 @@ public class ChooseCourseFragment extends Fragment {
             mUserID = getArguments().getString(USER_ID);
         }
         mFABChooseCourses = rootView.findViewById(R.id.fabChooseCourses);
+        layoutInstructions = rootView.findViewById(R.id.layoutInstructions);
+        layoutInstructions.setVisibility(View.VISIBLE);
         setViewModel();
         setRecycler();
-        searchByCourseId();
+        initializeSearchById();
         return rootView;
     }
 
-    private void setViewModel() {
-        mViewModel = ViewModelProviders.of(this).get(ChooseCourseViewModel.class);
-        mViewModel.init(mUserID);
-        allCourses.addAll(mViewModel.getAllCourses());
-        allButEnrolledCourses.addAll(mViewModel.getAllButEnrolled());
-        enrolledCourses.addAll(mViewModel.getEnrolledCourses());
-    }
-
-    private void setRecycler() {
-        recyclerView = rootView.findViewById(R.id.choose_course_recycler);
-        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-        mAdapter = new RecyclerAdapter(new ArrayList<Course>());
-        recyclerView.setAdapter(mAdapter);
-    }
-
-    // filter to choose course type
-    private void closeSearchByCourseID() {
-        ObjectAnimator.ofFloat(mLayoutSearch, "alpha", 0f, 1f).getStartDelay();
-        mLayoutSearch.setVisibility(View.GONE);
-    }
-
-    private void searchByCourseId() {
+    private void initializeSearchById() {
         mLayoutSearch = rootView.findViewById(R.id.searchLayout);
         mLayoutDegreeLevel = rootView.findViewById(R.id.layoutDegreeLevel);
         mBtnUndergraduate = rootView.findViewById(R.id.undergraduate);
@@ -214,11 +203,52 @@ public class ChooseCourseFragment extends Fragment {
         btn6 = rootView.findViewById(R.id.btnSem6);
 
         btnSearch = rootView.findViewById(R.id.btnSearch);
-        btnSearch.setEnabled(false);
+        btnCheckAll = rootView.findViewById(R.id.btnCheckAll);
+    }
+
+    private void setViewModel() {
+        mViewModel = ViewModelProviders.of(this).get(ChooseCourseViewModel.class);
+        mViewModel.init(mUserID);
+        allCourses.addAll(mViewModel.getAllCourses());
+        allButEnrolledCourses.addAll(mViewModel.getAllButEnrolled());
+        enrolledCourses.addAll(mViewModel.getEnrolledCourses());
+    }
+
+    private void setRecycler() {
+        recyclerView = rootView.findViewById(R.id.choose_course_recycler);
+        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        mAdapter = new RecyclerAdapter(mViewModel.getCoursesToEnrollList());
+        recyclerView.setAdapter(mAdapter);
+    }
+
+    // filter to choose course type
+    private void closeSearchByCourseID() {
+        ObjectAnimator.ofFloat(mLayoutSearch, "alpha", 0f, 1f).getStartDelay();
+        mLayoutSearch.setVisibility(View.GONE);
+    }
+
+    private void searchByCourseId() {
+        layoutInstructions.setVisibility(View.GONE);
+        //btnSearch.setEnabled(false);
         btnSearch.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 searchCourse();
+                closeSearchByCourseID();
+                btnCheckAll.setVisibility(View.VISIBLE);
+            }
+        });
+
+        btnCheckAll.setVisibility(View.GONE);
+        btnCheckAll.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                for (Course course : filteredByIdCourseList) {
+                    mViewModel.putCourseToEnroll(course);
+                }
+                mCheckIfShouldAddCourses.checkIfShouldAddCourses(true, mViewModel.getCoursesToEnroll());
+                mAdapter.putData(mViewModel.getCoursesToEnrollList());
+                btnCheckAll.setVisibility(View.GONE);
             }
         });
 
@@ -297,6 +327,7 @@ public class ChooseCourseFragment extends Fragment {
             public void onClick(View v) {
                 setDegreeLevelNotClicked();
                 setElectivesNotClicked();
+                setGraduateElectivesNotClicked();
                 setSemesterNotClicked();
                 setVisibility();
                 mBtnUndergraduate.setSelected(true);
@@ -313,6 +344,7 @@ public class ChooseCourseFragment extends Fragment {
             public void onClick(View v) {
                 setDegreeLevelNotClicked();
                 setElectivesNotClicked();
+                setGraduateElectivesNotClicked();
                 setSemesterNotClicked();
                 setVisibility();
                 mBtnGraduate.setSelected(true);
@@ -329,6 +361,7 @@ public class ChooseCourseFragment extends Fragment {
             public void onClick(View v) {
                 setDegreeLevelNotClicked();
                 setElectivesNotClicked();
+                setGraduateElectivesNotClicked();
                 setSemesterNotClicked();
                 setVisibility();
                 mBtnProfessional.setSelected(true);
@@ -405,6 +438,7 @@ public class ChooseCourseFragment extends Fragment {
             public void onClick(View v) {
                 if (DEGREE_LEVEL.equals("D")) {
                     mLayoutGraduateElectiveModules.setVisibility(View.GONE);
+                    mLayoutSemester14.setVisibility(View.VISIBLE);
                 } else {
                     mLayoutSemester14.setVisibility(View.VISIBLE);
                     mLayoutSemester56.setVisibility(View.VISIBLE);
@@ -520,7 +554,7 @@ public class ChooseCourseFragment extends Fragment {
     }
 
     private void searchCourse() {
-        List<Course> list = new ArrayList<>();
+        filteredByIdCourseList.clear();
         List<Course> degreeList = new ArrayList<>();
         List<Course> electiveList = new ArrayList<>();
         List<Course> electiveGradList = new ArrayList<>();
@@ -539,8 +573,6 @@ public class ChooseCourseFragment extends Fragment {
                     electiveList.add(course);
                 }
             }
-            list = electiveList;
-
             if (GRAD_MODULE != null) {
                 for (Course course : electiveList) {
                     String mGm = MODULE + GRAD_MODULE;
@@ -549,7 +581,7 @@ public class ChooseCourseFragment extends Fragment {
                     } else if (course.getId().contains(mGm)) {
                         electiveGradList.add(course);
                     }
-                    list = electiveGradList;
+                    filteredByIdCourseList = electiveGradList;
                 }
                 if (SEMESTER != 0) {
                     for (Course c : electiveGradList) {
@@ -557,7 +589,7 @@ public class ChooseCourseFragment extends Fragment {
                             semesterList.add(c);
                         }
                     }
-                    list = semesterList;
+                    filteredByIdCourseList = semesterList;
                 }
             } else {
                 if (SEMESTER != 0) {
@@ -566,12 +598,12 @@ public class ChooseCourseFragment extends Fragment {
                             semesterList.add(c);
                         }
                     }
-                    list = semesterList;
+                    filteredByIdCourseList = semesterList;
                 }
             }
         }
-        mAdapter.putData(list);
-        closeSearchByCourseID();
+        mAdapter.clear();
+        mAdapter.putData(filteredByIdCourseList);
     }
 //end of filter
 
@@ -587,9 +619,11 @@ public class ChooseCourseFragment extends Fragment {
     public void onDetach() {
         super.onDetach();
         this.mCheckIfShouldAddCourses = null;
+        mAdapter.clear();
         allCourses.clear();
         coursesToEnroll.clear();
         enrolledCourses.clear();
+        allButEnrolledCourses.clear();
         mViewModel.clearCoursesToEnroll();
     }
 
@@ -664,14 +698,19 @@ public class ChooseCourseFragment extends Fragment {
 
         public void putData(List<Course> list) {
             adapterCourseList.clear();
-            adapterCourseList = list;
+            adapterCourseList.addAll(list);
             adapterCourseListFull = new ArrayList<>(adapterCourseList);
+            notifyDataSetChanged();
+        }
+
+        public void clear() {
+            adapterCourseList.clear();
+            adapterCourseListFull.clear();
             notifyDataSetChanged();
         }
 
         private void setUpListItemView(ViewHolder holder, Course course) {
             //setEnrolledCourses(holder, course);
-
             if (mViewModel.getCoursesToEnroll().isEmpty()) {
                 setOnItemClickListener(holder, course);
             } else if (mViewModel.getCoursesToEnroll().containsKey(course.getId())) {

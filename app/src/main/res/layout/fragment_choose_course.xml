@@ -8,21 +8,60 @@
 
 
     <RelativeLayout
-
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
         <include
             android:id="@+id/searchLayout"
             layout="@layout/search_layout"
-            android:visibility="visible" />
+            android:visibility="gone" />
+
+        <LinearLayout
+            android:id="@+id/layoutInstructions"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:gravity="center">
+
+            <TextView
+                android:id="@+id/tvFindByName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="1dp"
+                android:drawableEnd="@drawable/sharp_search_24"
+                android:gravity="center"
+                android:text="Pronađi kolegije po nazivu  " />
+
+            <TextView
+                android:id="@+id/tvFindByID"
+                android:padding="8dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:drawableEnd="@drawable/ic_filter_list_black_24dp"
+                android:gravity="center"
+                android:text="ili po smjeru  " />
+
+
+        </LinearLayout>
+
+        <Button
+            android:id="@+id/btnCheckAll"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@color/fui_transparent"
+            android:drawableRight="@drawable/ic_done_all_black_24dp"
+            android:gravity="center"
+            android:layout_centerHorizontal="true"
+            android:paddingStart="32dp"
+            android:paddingEnd="32dp"
+            android:text="Dodaj sve     "
+            android:visibility="gone" />
 
         <android.support.v7.widget.RecyclerView
             android:id="@+id/choose_course_recycler"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_below="@+id/searchLayout" />
-
+            android:layout_below="@+id/btnCheckAll" />
 
         <android.support.design.widget.FloatingActionButton
             android:id="@+id/fabChooseCourses"

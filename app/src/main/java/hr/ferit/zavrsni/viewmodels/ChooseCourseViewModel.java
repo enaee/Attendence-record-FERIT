@@ -27,8 +27,8 @@ public class ChooseCourseViewModel extends ViewModel {
     private List<Course> coursesList;
     private List<EnrolledCourse> enrolledCourses;
     private Map<String, Course> allCoursesMap;
-    private Map<String, Course> chosenCourses;
     private Map<String, Object> coursesToEnroll;
+    private Map<String, Course> coursesToEnrollMap;
     private FirebaseManager mRepository;
     private String mUserID;
 
@@ -38,8 +38,8 @@ public class ChooseCourseViewModel extends ViewModel {
         allCoursesMap = new HashMap<>();
         enrolledCourses = new ArrayList<>();
         coursesList = new ArrayList<>();
-        chosenCourses = new HashMap<>();
         coursesToEnroll = new HashMap<>();
+        coursesToEnrollMap = new HashMap<>();
         putData();
     }
 
@@ -81,15 +81,25 @@ public class ChooseCourseViewModel extends ViewModel {
         return coursesToEnroll;
     }
 
+    public List<Course> getCoursesToEnrollList() {
+        List<Course> coursesToEnrollList = new ArrayList<>();
+        coursesToEnrollList.clear();
+        coursesToEnrollList.addAll(coursesToEnrollMap.values());
+        return coursesToEnrollList;
+    }
+
     public void clearCoursesToEnroll() {
+        coursesToEnrollMap.clear();
         coursesToEnroll.clear();
     }
 
     public void putCourseToEnroll(Course course) {
+        coursesToEnrollMap.put(course.getId(), course);
         coursesToEnroll.put(course.getId(), prepareCourse(course));
     }
 
     public void removeCoursesToEnroll(Course course) {
+        coursesToEnrollMap.remove(course.getId());
         coursesToEnroll.remove(course.getId());
     }
 
